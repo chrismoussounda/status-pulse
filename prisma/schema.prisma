@@ -1,0 +1,121 @@
+// StatusPulse data model.
+// See prisma.config.ts for the datasource URL and migration settings.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  // Pooled connection string — what the app uses at runtime. Required on
+  // serverless (Vercel + Neon) to avoid exhausting the connection cap; see
+  // the Engineering Decisions section in the README.
+  url       = env("DATABASE_URL")
+  // Unpooled connection string — what `prisma migrate` needs (migrations
+  // can't run through a connection pooler). Same value locally.
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  passwordHash   String
+  name           String?
+  // Public status page URL: /status/[statusPageSlug]. Generated at signup, editable later.
+  statusPageSlug String   @unique
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  monitors             Monitor[]
+  notificationChannels NotificationChannel[]
+}
+
+enum HttpMethod {
+  GET
+  POST
+  PUT
+  HEAD
+}
+
+model Monitor {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name            String
+  url             String
+  method          HttpMethod @default(GET)
+  expectedStatus  Int        @default(200)
+  // How often this monitor is due to be checked.
+  intervalSeconds Int        @default(300)
+  isActive        Boolean    @default(true)
+  // Whether this monitor appears on the owner's public status page.
+  isPublic        Boolean    @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  checks    Check[]
+  incidents Incident[]
+
+  @@index([userId])
+}
+
+enum CheckStatus {
+  UP
+  DOWN
+}
+
+model Check {
+  id        String  @id @default(cuid())
+  monitorId String
+  monitor   Monitor @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+
+  status     CheckStatus
+  statusCode Int?
+  latencyMs  Int?
+  error      String?
+  checkedAt  DateTime    @default(now())
+
+  // Uptime %/latency calculations and "due monitors" queries both scan this range.
+  @@index([monitorId, checkedAt])
+}
+
+model Incident {
+  id        String  @id @default(cuid())
+  monitorId String
+  monitor   Monitor @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+
+  startedAt  DateTime  @default(now())
+  // Null while the incident is open. Set by the check runner on recovery.
+  resolvedAt DateTime?
+  cause      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // The check runner's "is there already an open incident for this monitor?"
+  // lookup filters on resolvedAt IS NULL for a given monitor.
+  @@index([monitorId, resolvedAt])
+}
+
+enum NotificationChannelType {
+  EMAIL
+  WEBHOOK
+}
+
+model NotificationChannel {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type     NotificationChannelType
+  // Email address for EMAIL, URL for WEBHOOK.
+  target   String
+  isActive Boolean                 @default(true)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
