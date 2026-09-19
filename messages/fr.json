@@ -1,0 +1,129 @@
+{
+  "common": {
+    "appName": "StatusPulse",
+    "loading": "Chargement…"
+  },
+  "theme": {
+    "light": "Clair",
+    "dark": "Sombre",
+    "system": "Système",
+    "toggle": "Changer de thème"
+  },
+  "nav": {
+    "logout": "Se déconnecter",
+    "dashboard": "Tableau de bord"
+  },
+  "landing": {
+    "title": "Surveillez vos endpoints. Publiez une page de statut.",
+    "subtitle": "StatusPulse vérifie vos URLs à intervalle régulier, détecte les incidents et publie une page de statut publique et partageable pour vos utilisateurs.",
+    "cta": "Commencer gratuitement",
+    "secondaryCta": "Se connecter",
+    "underConstruction": "En construction — suivez l'avancement sur le",
+    "issueTracker": "suivi des tickets",
+    "featureMonitoringTitle": "Vérifications planifiées",
+    "featureMonitoringBody": "Un exécuteur de vérifications, piloté par une tâche planifiée, ping vos endpoints et journalise chaque réponse.",
+    "featureIncidentsTitle": "Détection d'incidents",
+    "featureIncidentsBody": "Un changement de statut ouvre automatiquement un incident ; un retour à la normale le résout.",
+    "featureStatusPageTitle": "Page de statut publique",
+    "featureStatusPageBody": "Partagez une page de statut lisible par tous, avec l'historique des incidents et le taux de disponibilité."
+  },
+  "auth": {
+    "brand": "StatusPulse",
+    "login": {
+      "title": "Content de vous revoir",
+      "subtitle": "Connectez-vous pour gérer vos moniteurs.",
+      "email": "Adresse e-mail",
+      "password": "Mot de passe",
+      "submit": "Se connecter",
+      "submitting": "Connexion…",
+      "noAccount": "Vous n'avez pas de compte ?",
+      "signupLink": "Créer un compte",
+      "error": "E-mail ou mot de passe invalide."
+    },
+    "signup": {
+      "title": "Créez votre compte",
+      "subtitle": "Commencez à surveiller vos endpoints en quelques minutes.",
+      "name": "Nom",
+      "email": "Adresse e-mail",
+      "password": "Mot de passe",
+      "confirmPassword": "Confirmer le mot de passe",
+      "submit": "Créer le compte",
+      "submitting": "Création du compte…",
+      "hasAccount": "Vous avez déjà un compte ?",
+      "loginLink": "Se connecter",
+      "errorEmailTaken": "Un compte existe déjà avec cet e-mail.",
+      "errorInvalid": "Informations d'inscription invalides."
+    },
+    "validation": {
+      "nameRequired": "Le nom est requis",
+      "emailInvalid": "Saisissez une adresse e-mail valide",
+      "passwordMin": "Le mot de passe doit contenir au moins 8 caractères",
+      "passwordRequired": "Le mot de passe est requis",
+      "passwordsMismatch": "Les mots de passe ne correspondent pas"
+    }
+  },
+  "dashboard": {
+    "title": "Vos moniteurs",
+    "newMonitor": "Nouveau moniteur",
+    "empty": "Vous n'avez encore aucun moniteur.",
+    "emptyCta": "Créer votre premier moniteur",
+    "table": {
+      "monitor": "Moniteur",
+      "status": "Statut",
+      "uptime": "Disponibilité (30j)",
+      "public": "Public",
+      "active": "Actif"
+    },
+    "badge": {
+      "public": "Public",
+      "private": "Privé"
+    }
+  },
+  "monitorStatus": {
+    "up": "En ligne",
+    "down": "Hors ligne",
+    "paused": "En pause",
+    "pending": "En attente"
+  },
+  "monitorForm": {
+    "name": "Nom",
+    "namePlaceholder": "Vérification de l'API",
+    "url": "URL",
+    "urlPlaceholder": "https://exemple.com/health",
+    "urlInvalid": "Saisissez une URL valide, incluant https://",
+    "method": "Méthode",
+    "expectedStatus": "Statut attendu",
+    "interval": "Intervalle de vérification (secondes)",
+    "intervalDescription": "Fréquence à laquelle l'exécuteur doit vérifier cette URL.",
+    "intervalMin": "L'intervalle minimum est de 60 secondes",
+    "active": "Actif",
+    "activeDescription": "Inclure dans l'exécuteur de vérifications.",
+    "public": "Public",
+    "publicDescription": "Afficher sur votre page de statut publique.",
+    "createSubmit": "Créer le moniteur",
+    "editSubmit": "Enregistrer les modifications",
+    "saving": "Enregistrement…",
+    "detailTitle": "Détails du moniteur",
+    "recentChecks": "Vérifications récentes",
+    "incidentHistory": "Historique des incidents",
+    "noChecks": "Aucune vérification pour le moment.",
+    "noIncidents": "Aucun incident enregistré.",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "deleteConfirm": "Supprimer ce moniteur ? Cette action est irréversible.",
+    "backToDashboard": "Retour au tableau de bord"
+  },
+  "statusPage": {
+    "notFoundTitle": "Page de statut introuvable",
+    "notFoundBody": "Aucune page de statut publique ne correspond à cette adresse.",
+    "allOperational": "Tous les systèmes sont opérationnels",
+    "someDown": "Certains systèmes rencontrent des problèmes",
+    "uptime": "Disponibilité sur 90 jours",
+    "recentIncidents": "Incidents récents",
+    "noIncidents": "Aucun incident récent.",
+    "noPublicMonitors": "Aucun moniteur public pour le moment.",
+    "resolved": "Résolu",
+    "ongoing": "En cours",
+    "poweredBy": "Propulsé par"
+  }
+}

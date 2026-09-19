@@ -1,0 +1,129 @@
+{
+  "common": {
+    "appName": "StatusPulse",
+    "loading": "Loading…"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "toggle": "Toggle theme"
+  },
+  "nav": {
+    "logout": "Log out",
+    "dashboard": "Dashboard"
+  },
+  "landing": {
+    "title": "Monitor your endpoints. Publish a status page.",
+    "subtitle": "StatusPulse checks your URLs on a schedule, detects incidents, and publishes a shareable public status page for your users.",
+    "cta": "Get started for free",
+    "secondaryCta": "Log in",
+    "underConstruction": "Under construction — follow progress on the",
+    "issueTracker": "issue tracker",
+    "featureMonitoringTitle": "Scheduled checks",
+    "featureMonitoringBody": "A cron-driven check runner pings your endpoints and logs every response.",
+    "featureIncidentsTitle": "Incident detection",
+    "featureIncidentsBody": "A status change automatically opens an incident; a recovery resolves it.",
+    "featureStatusPageTitle": "Public status page",
+    "featureStatusPageBody": "Share a readable status page with incident history and uptime for everyone."
+  },
+  "auth": {
+    "brand": "StatusPulse",
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Log in to manage your monitors.",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Log in",
+      "submitting": "Logging in…",
+      "noAccount": "Don't have an account?",
+      "signupLink": "Sign up",
+      "error": "Invalid email or password."
+    },
+    "signup": {
+      "title": "Create your account",
+      "subtitle": "Start monitoring your endpoints in a couple of minutes.",
+      "name": "Name",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm password",
+      "submit": "Create account",
+      "submitting": "Creating account…",
+      "hasAccount": "Already have an account?",
+      "loginLink": "Log in",
+      "errorEmailTaken": "An account with that email already exists.",
+      "errorInvalid": "Invalid signup details."
+    },
+    "validation": {
+      "nameRequired": "Name is required",
+      "emailInvalid": "Enter a valid email address",
+      "passwordMin": "Password must be at least 8 characters",
+      "passwordRequired": "Password is required",
+      "passwordsMismatch": "Passwords don't match"
+    }
+  },
+  "dashboard": {
+    "title": "Your monitors",
+    "newMonitor": "New monitor",
+    "empty": "You don't have any monitors yet.",
+    "emptyCta": "Create your first monitor",
+    "table": {
+      "monitor": "Monitor",
+      "status": "Status",
+      "uptime": "Uptime (30d)",
+      "public": "Public",
+      "active": "Active"
+    },
+    "badge": {
+      "public": "Public",
+      "private": "Private"
+    }
+  },
+  "monitorStatus": {
+    "up": "Up",
+    "down": "Down",
+    "paused": "Paused",
+    "pending": "Pending"
+  },
+  "monitorForm": {
+    "name": "Name",
+    "namePlaceholder": "API health check",
+    "url": "URL",
+    "urlPlaceholder": "https://example.com/health",
+    "urlInvalid": "Enter a valid URL, including https://",
+    "method": "Method",
+    "expectedStatus": "Expected status",
+    "interval": "Check interval (seconds)",
+    "intervalDescription": "How often the check runner should ping this URL.",
+    "intervalMin": "Minimum interval is 60 seconds",
+    "active": "Active",
+    "activeDescription": "Include in the check runner.",
+    "public": "Public",
+    "publicDescription": "Show on your public status page.",
+    "createSubmit": "Create monitor",
+    "editSubmit": "Save changes",
+    "saving": "Saving…",
+    "detailTitle": "Monitor details",
+    "recentChecks": "Recent checks",
+    "incidentHistory": "Incident history",
+    "noChecks": "No checks yet.",
+    "noIncidents": "No incidents recorded.",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this monitor? This can't be undone.",
+    "backToDashboard": "Back to dashboard"
+  },
+  "statusPage": {
+    "notFoundTitle": "Status page not found",
+    "notFoundBody": "No public status page matches this address.",
+    "allOperational": "All systems operational",
+    "someDown": "Some systems are experiencing issues",
+    "uptime": "90-day uptime",
+    "recentIncidents": "Recent incidents",
+    "noIncidents": "No recent incidents.",
+    "noPublicMonitors": "No public monitors yet.",
+    "resolved": "Resolved",
+    "ongoing": "Ongoing",
+    "poweredBy": "Powered by"
+  }
+}
