@@ -1,0 +1,15 @@
+name: Run checks
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+jobs:
+  run-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call the check runner
+        run: |
+          curl -sf -X POST "${{ secrets.APP_URL }}/api/cron/run-checks" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
