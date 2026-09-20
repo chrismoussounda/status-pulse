@@ -56,6 +56,15 @@ model Monitor {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Denormalized from the Check log by the check runner, so both the
+  // "which monitors are due" query and the dashboard's current-status
+  // display are a plain column read instead of a latest-per-monitor
+  // query. The check runner is the only writer, so it can't drift from
+  // the Check history it's derived from.
+  lastCheckedAt       DateTime?
+  lastStatus          CheckStatus?
+  consecutiveFailures Int          @default(0)
+
   checks    Check[]
   incidents Incident[]
 
