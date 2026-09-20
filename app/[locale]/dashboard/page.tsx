@@ -3,7 +3,7 @@ import { PlusIcon } from "lucide-react";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { computeUptimePercent } from "@/lib/uptime";
+import { calculateUptimeForWindow } from "@/lib/uptime";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { MonitorTable, type MonitorRow } from "@/components/monitor-table";
@@ -13,11 +13,13 @@ export default async function DashboardPage() {
   const [session, t] = await Promise.all([auth(), getTranslations("dashboard")]);
   const userId = session!.user.id;
 
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
   const monitors = await prisma.monitor.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
     include: {
-      checks: { orderBy: { checkedAt: "desc" }, take: 30 },
+      checks: { where: { checkedAt: { gte: thirtyDaysAgo } }, orderBy: { checkedAt: "desc" } },
     },
   });
 
@@ -37,7 +39,7 @@ export default async function DashboardPage() {
       url: monitor.url,
       isActive: monitor.isActive,
       isPublic: monitor.isPublic,
-      uptimePercent: computeUptimePercent(monitor.checks),
+      uptimePercent: calculateUptimeForWindow(monitor.checks, now, 30 * 24 * 60 * 60 * 1000) ?? 100,
       displayStatus,
     };
   });

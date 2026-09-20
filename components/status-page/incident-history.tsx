@@ -1,5 +1,6 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Badge } from "@/components/ui/badge";
+import { formatTimestamp } from "@/lib/format-timestamp";
 
 type Incident = {
   id: string;
@@ -9,7 +10,7 @@ type Incident = {
 };
 
 export async function IncidentHistory({ incidents }: { incidents: Incident[] }) {
-  const t = await getTranslations("statusPage");
+  const [t, locale] = await Promise.all([getTranslations("statusPage"), getLocale()]);
 
   if (incidents.length === 0) {
     return <p className="text-sm text-muted-foreground">{t("noIncidents")}</p>;
@@ -23,7 +24,10 @@ export async function IncidentHistory({ incidents }: { incidents: Incident[] }) 
           className="flex flex-col gap-1 rounded-lg border border-border p-2.5 text-sm"
         >
           <div className="flex items-center justify-between gap-2">
-            <span className="text-muted-foreground">{incident.startedAt.toLocaleDateString()}</span>
+            <span className="text-muted-foreground">
+              {formatTimestamp(incident.startedAt, locale)}
+              {incident.resolvedAt ? ` – ${formatTimestamp(incident.resolvedAt, locale)}` : ""}
+            </span>
             <Badge variant={incident.resolvedAt ? "outline" : "destructive"}>
               {incident.resolvedAt ? t("resolved") : t("ongoing")}
             </Badge>

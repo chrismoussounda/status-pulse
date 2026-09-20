@@ -111,7 +111,13 @@
     "edit": "Modifier",
     "delete": "Supprimer",
     "deleteConfirm": "Supprimer ce moniteur ? Cette action est irréversible.",
-    "backToDashboard": "Retour au tableau de bord"
+    "backToDashboard": "Retour au tableau de bord",
+    "uptime": "Disponibilité",
+    "uptime24h": "Disponibilité (24h)",
+    "uptime7d": "Disponibilité (7j)",
+    "uptime30d": "Disponibilité (30j)",
+    "noData": "Aucune donnée",
+    "latency": "Latence (20 dernières vérifications)"
   },
   "statusPage": {
     "notFoundTitle": "Page de statut introuvable",

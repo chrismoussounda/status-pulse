@@ -111,7 +111,13 @@
     "edit": "Edit",
     "delete": "Delete",
     "deleteConfirm": "Delete this monitor? This can't be undone.",
-    "backToDashboard": "Back to dashboard"
+    "backToDashboard": "Back to dashboard",
+    "uptime": "Uptime",
+    "uptime24h": "Uptime (24h)",
+    "uptime7d": "Uptime (7d)",
+    "uptime30d": "Uptime (30d)",
+    "noData": "No data yet",
+    "latency": "Latency (last 20 checks)"
   },
   "statusPage": {
     "notFoundTitle": "Status page not found",

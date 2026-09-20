@@ -1,24 +1,31 @@
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { computeUptimePercent } from "@/lib/uptime";
+import { calculateUptimeSummary } from "@/lib/uptime";
+import { getLatencySeries } from "@/lib/latency";
+import { formatTimestamp } from "@/lib/format-timestamp";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MonitorStatusBadge, type DisplayStatus } from "@/components/monitor-status-badge";
 import { MonitorDeleteButton } from "@/components/monitor-delete-button";
+import { LatencySparkline } from "@/components/latency-sparkline";
 
 export default async function MonitorDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [session, t] = await Promise.all([auth(), getTranslations("monitorForm")]);
+  const [session, t, locale] = await Promise.all([
+    auth(),
+    getTranslations("monitorForm"),
+    getLocale(),
+  ]);
   const userId = session!.user.id;
 
   const monitor = await prisma.monitor.findFirst({
     where: { id, userId },
     include: {
-      checks: { orderBy: { checkedAt: "desc" }, take: 20 },
+      checks: { orderBy: { checkedAt: "desc" }, take: 100 },
       incidents: { orderBy: { startedAt: "desc" }, take: 10 },
     },
   });
@@ -32,6 +39,11 @@ export default async function MonitorDetailPage({ params }: { params: Promise<{ 
       : lastCheck.status === "UP"
         ? "up"
         : "down";
+
+  const uptime = calculateUptimeSummary(monitor.checks, new Date());
+  const latencyPoints = getLatencySeries([...monitor.checks].reverse());
+
+  const formatPercent = (value: number | null) => (value === null ? t("noData") : `${value}%`);
 
   return (
     <div className="flex max-w-3xl flex-col gap-6">
@@ -56,7 +68,7 @@ export default async function MonitorDetailPage({ params }: { params: Promise<{ 
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -69,13 +81,48 @@ export default async function MonitorDetailPage({ params }: { params: Promise<{ 
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">Uptime</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              {t("uptime24h")}
+            </CardTitle>
           </CardHeader>
           <CardContent className="text-2xl font-semibold">
-            {computeUptimePercent(monitor.checks)}%
+            {formatPercent(uptime.uptime24h)}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              {t("uptime7d")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-2xl font-semibold">
+            {formatPercent(uptime.uptime7d)}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              {t("uptime30d")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-2xl font-semibold">
+            {formatPercent(uptime.uptime30d)}
           </CardContent>
         </Card>
       </div>
+
+      {latencyPoints.length >= 2 ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              {t("latency")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <LatencySparkline points={latencyPoints} />
+          </CardContent>
+        </Card>
+      ) : null}
 
       <section className="flex flex-col gap-3">
         <h2 className="font-heading text-lg font-medium">{t("recentChecks")}</h2>
@@ -83,12 +130,14 @@ export default async function MonitorDetailPage({ params }: { params: Promise<{ 
           <p className="text-sm text-muted-foreground">{t("noChecks")}</p>
         ) : (
           <ul className="flex flex-col divide-y divide-border overflow-hidden rounded-xl border border-border">
-            {monitor.checks.map((check) => (
+            {monitor.checks.slice(0, 20).map((check) => (
               <li
                 key={check.id}
                 className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm"
               >
-                <span className="text-muted-foreground">{check.checkedAt.toLocaleString()}</span>
+                <span className="text-muted-foreground">
+                  {formatTimestamp(check.checkedAt, locale)}
+                </span>
                 <span className="flex items-center gap-3">
                   {check.latencyMs != null ? (
                     <span className="text-muted-foreground">{check.latencyMs}ms</span>
@@ -110,8 +159,8 @@ export default async function MonitorDetailPage({ params }: { params: Promise<{ 
             {monitor.incidents.map((incident) => (
               <li key={incident.id} className="flex flex-col gap-1 px-4 py-2.5 text-sm">
                 <span className="font-medium">
-                  {incident.startedAt.toLocaleString()}
-                  {incident.resolvedAt ? ` – ${incident.resolvedAt.toLocaleString()}` : ""}
+                  {formatTimestamp(incident.startedAt, locale)}
+                  {incident.resolvedAt ? ` – ${formatTimestamp(incident.resolvedAt, locale)}` : ""}
                 </span>
                 {incident.cause ? (
                   <span className="text-muted-foreground">{incident.cause}</span>
