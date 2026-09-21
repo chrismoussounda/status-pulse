@@ -4,16 +4,43 @@ An uptime monitoring & public status-page tool. Add HTTP endpoints to watch; a
 scheduled check runner detects incidents and publishes a shareable public
 status page per account, in French or English.
 
-> **Status:** auth, monitor CRUD, the check runner, and the public status page
-> are live. Email notifications land in a future epic — see the
-> [issues](../../issues) for the backlog.
+> **Status:** feature-complete for this phase — auth, monitor CRUD, the check
+> runner with consecutive-failure incident detection and email
+> notifications, dashboard uptime/latency stats, and the public status page
+> are all in. See the [issues](../../issues) for the backlog.
 
 ## Stack
 
 Next.js (App Router) + TypeScript, Prisma + Postgres, NextAuth (Credentials),
-next-intl (French default, English secondary), shadcn/ui on Tailwind v4 with a
-custom theme, deployed on Vercel with a GitHub Actions cron workflow driving
-the check runner. See **Engineering Decisions** below for why.
+Resend (email), next-intl (French default, English secondary), shadcn/ui on
+Tailwind v4 with a custom theme, deployed on Vercel with a GitHub Actions
+cron workflow driving the check runner. See **Engineering Decisions** below
+for why.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    Cron["GitHub Actions<br/>(schedule: */5 * * * *)"]
+    API["/api/cron/run-checks<br/>(Vercel)"]
+    App["Next.js app<br/>(Vercel)"]
+    DB[("Neon Postgres")]
+    Targets["Monitored URLs"]
+    Resend["Resend<br/>(email)"]
+    Browser["Dashboard · Login · Public status page"]
+
+    Cron -->|"POST + CRON_SECRET"| API
+    API -->|HTTP checks| Targets
+    API -->|"write Check / Incident"| DB
+    API -.->|on open/resolve| Resend
+    Browser --> App
+    App --> DB
+```
+
+No persistent scheduler process — GitHub Actions is the "always-on" part,
+calling a stateless, secret-protected route on Vercel. See **Engineering
+Decisions** for why, and for the concurrency/timeout math that keeps one
+route invocation inside a serverless time budget.
 
 ## Getting started
 
@@ -32,6 +59,32 @@ pnpm run dev
 Open [http://localhost:3000](http://localhost:3000) — it redirects to `/fr`
 by default (English at `/en`).
 
+### Demo data
+
+```bash
+pnpm run db:seed
+```
+
+Creates `demo@statuspulse.dev` / `demo-password-123` with 5 monitors and
+~30 days of check history (`prisma/seed.ts`) — one with a resolved past
+incident, one currently down (so the public status page isn't a wall of
+green), one private (to see tenant isolation). Re-running it wipes and
+recreates the same demo account, so it's safe to run repeatedly. Public
+page: `/fr/status/demo`.
+
+### Triggering the check runner locally
+
+There's no scheduler running in dev — call the route directly with the
+`CRON_SECRET` from your `.env`:
+
+```bash
+curl -X POST http://localhost:3000/api/cron/run-checks \
+  -H "Authorization: Bearer $CRON_SECRET"
+```
+
+Without `RESEND_API_KEY` set, notification emails log a warning and no-op
+instead of failing — you'll still see Check/Incident rows update.
+
 ## Scripts
 
 | Script                   | What it does                                  |
@@ -47,12 +100,37 @@ by default (English at `/en`).
 | `pnpm run format:check`  | Check formatting without writing              |
 | `pnpm run db:migrate`    | Apply Prisma migrations to the local database |
 | `pnpm run db:generate`   | Regenerate the Prisma client                  |
+| `pnpm run db:seed`       | Wipe and recreate the demo account            |
 
 CI runs lint → typecheck → test → build (with migrations applied to a fresh
 Postgres service container) on every pull request — see
 `.github/workflows/ci.yml`. A separate scheduled workflow
 (`.github/workflows/cron.yml`) calls the check runner every 5 minutes in
 production; it needs the `APP_URL` and `CRON_SECRET` repo secrets set.
+
+## API
+
+The one real HTTP endpoint with an external caller — the check-runner
+trigger GitHub Actions calls on a schedule — is documented in
+[`docs/openapi.yaml`](docs/openapi.yaml). Signup, login, and monitor CRUD
+run through NextAuth's own routes and Next.js Server Actions rather than a
+conventional REST API, so there's nothing to spec there.
+
+## Deployment
+
+1. **Neon**: create a Postgres project, copy the pooled connection string
+   into `DATABASE_URL` and the unpooled (direct) one into `DIRECT_URL`.
+2. **Vercel**: import the repo, set `DATABASE_URL`, `DIRECT_URL`,
+   `NEXTAUTH_URL` (your deployed URL), `NEXTAUTH_SECRET` (a random 32-byte
+   value), `CRON_SECRET` (any random string), and `RESEND_API_KEY` as
+   project env vars. The `build` script runs `prisma migrate deploy` before
+   `next build`, so every deploy applies any pending migrations
+   automatically — no separate migration step.
+3. **GitHub Actions**: add the same `CRON_SECRET` as a repo secret, and the
+   deployed URL as a repo _variable_ named `APP_URL` (Settings → Secrets
+   and variables → Actions) — `.github/workflows/cron.yml` needs both.
+4. Optionally run `pnpm run db:seed` against the production database (with
+   `DATABASE_URL` pointed at Neon) so the deployed demo isn't empty.
 
 ## Engineering Decisions
 
@@ -78,6 +156,44 @@ concurrent checks, no dependency) with a per-check `AbortController` timeout
 (10s), so one slow endpoint can't stall the whole batch and unbounded
 parallelism can't blow the function's `maxDuration` (set to 60s on the
 route).
+
+**Consecutive-failure threshold before opening an incident.**
+`lib/checks/decide-incident-action.ts` is a pure function — no DB access —
+so it opens an incident only after 3 consecutive DOWN checks, not on the
+first one. A single failed check is treated as noise (a transient network
+hiccup), not an incident; the threshold is a plain constant
+(`CONSECUTIVE_FAILURE_THRESHOLD`), and every flap scenario (fail-fail-recover,
+fail-recover-fail, sustained outage then recovery) is a unit test rather
+than something that needs a real database to exercise. The count itself is
+denormalized onto `Monitor.consecutiveFailures` (reset to 0 on any UP) so
+the check runner doesn't need to re-scan Check history on every run.
+
+**Email notifications are best-effort and go straight to the account
+owner's email.** `lib/checks/record-check-result.ts` writes the Check row,
+denormalized Monitor state, and any Incident open/resolve in one
+transaction, then sends an email via Resend _after_ the transaction
+commits, with a `.catch()` — a failed send can't roll back state that's
+already correct, or abort the rest of the check-runner batch for other
+monitors. There's no per-channel configuration UI (the `NotificationChannel`
+model exists in the schema but isn't wired up yet): every account gets
+email notifications to its signup address, which covers the common case
+without building settings UI this phase doesn't need. Without
+`RESEND_API_KEY` set, `sendEmail` logs and no-ops instead of throwing, so
+this works locally and on a demo deploy with no Resend account.
+
+**Uptime and latency are computed on read, not stored.**
+`calculateUptimeSummary` (24h/7d/30d, `null` — not 0 or 100 — when a window
+has no data) and `getLatencySeries` are both pure functions over the
+`Check` rows already being fetched for the page, unit-tested against
+hand-computed fixtures. No separate rollup table or scheduled aggregation
+job — at this data volume a scan of the last N checks is cheap enough that
+precomputing would be optimizing a cost that doesn't exist yet.
+
+**Migrations run as part of the build, not a separate step.** Vercel has no
+release-phase hook like Heroku's, so `prisma migrate deploy` is prepended
+to the `build` script instead of relying on a separate CI/deploy step. It's
+idempotent (a no-op once migrations are applied), so this is also harmless
+in CI, which already applies migrations explicitly before tests run.
 
 **Why `directUrl` alongside `url` in the Prisma datasource.** Neon's free
 tier has a real connection cap, and serverless functions can open a new

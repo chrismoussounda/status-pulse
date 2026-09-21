@@ -1,0 +1,52 @@
+openapi: 3.0.3
+info:
+  title: StatusPulse API
+  version: "1.0"
+  description: >
+    StatusPulse's authenticated CRUD (signup, login, monitor management)
+    runs through Next.js Server Actions, not REST endpoints, and NextAuth's
+    own routes (/api/auth/*) are framework-managed — neither is documented
+    here as an HTTP contract, since neither has a stable one to document.
+    This spec covers the one real HTTP endpoint with an external caller:
+    the check-runner trigger that GitHub Actions calls on a schedule (see
+    .github/workflows/cron.yml).
+servers:
+  - url: /api
+
+paths:
+  /cron/run-checks:
+    post:
+      operationId: runDueChecks
+      summary: Run every check currently due
+      description: >
+        Finds monitors whose intervalSeconds has elapsed since
+        lastCheckedAt, checks them with bounded concurrency, and records
+        each result — updating the monitor's denormalized status, opening
+        or resolving an Incident per the consecutive-failure threshold, and
+        sending a best-effort email notification on open/resolve.
+      security:
+        - cronSecret: []
+      responses:
+        "200":
+          description: Checks ran (possibly zero, if none were due)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [checked]
+                properties:
+                  checked:
+                    type: integer
+                    description: Number of monitors checked this run
+                    example: 3
+        "401":
+          description: Missing or invalid CRON_SECRET bearer token
+
+components:
+  securitySchemes:
+    cronSecret:
+      type: http
+      scheme: bearer
+      description: >
+        Compared in constant time (lib/checks/verify-cron-secret.ts)
+        against the CRON_SECRET environment variable.
