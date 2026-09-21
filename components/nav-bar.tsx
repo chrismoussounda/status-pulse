@@ -16,7 +16,7 @@ export async function NavBar({ user }: NavBarProps) {
 
   return (
     <header className="border-b border-border">
-      <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8 3xl:max-w-7xl">
+      <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8 3xl:max-w-[1600px] 3xl:px-12">
         <Link href="/dashboard" className="flex items-center gap-2 font-heading font-semibold">
           <ActivityIcon className="size-5 text-primary" />
           <span>StatusPulse</span>

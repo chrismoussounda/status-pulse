@@ -14,7 +14,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <div className="flex min-h-screen flex-col">
       <NavBar user={{ name: session.user.name ?? null, email: session.user.email ?? "" }} />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 lg:px-8 3xl:max-w-7xl">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 lg:px-8 3xl:max-w-[1600px] 3xl:px-12">
         {children}
       </main>
     </div>

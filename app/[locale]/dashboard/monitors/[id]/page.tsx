@@ -46,7 +46,7 @@ export default async function MonitorDetailPage({ params }: { params: Promise<{ 
   const formatPercent = (value: number | null) => (value === null ? t("noData") : `${value}%`);
 
   return (
-    <div className="flex max-w-3xl flex-col gap-6">
+    <div className="flex max-w-3xl flex-col gap-6 3xl:max-w-4xl">
       <div>
         <Link href="/dashboard" className="text-sm text-muted-foreground hover:underline">
           &larr; {t("backToDashboard")}
