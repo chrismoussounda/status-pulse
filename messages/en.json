@@ -115,7 +115,8 @@
     "uptime7d": "Uptime (7d)",
     "uptime30d": "Uptime (30d)",
     "noData": "No data yet",
-    "latency": "Latency (last 20 checks)"
+    "latency": "Latency (last 20 checks)",
+    "dailyUptime": "Daily uptime (90 days)"
   },
   "statusPage": {
     "notFoundTitle": "Status page not found",
@@ -128,6 +129,14 @@
     "noPublicMonitors": "No public monitors yet.",
     "resolved": "Resolved",
     "ongoing": "Ongoing",
-    "poweredBy": "Powered by"
+    "poweredBy": "Powered by",
+    "metaTitle": "{name} status",
+    "metaDescription": "Live status and uptime history for {name}."
+  },
+  "uptimeBars": {
+    "label": "Daily uptime for the last {days} days",
+    "noData": "No data",
+    "daysAgo": "{days} days ago",
+    "today": "Today"
   }
 }

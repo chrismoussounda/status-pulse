@@ -24,7 +24,7 @@ export type MonitorRow = {
   url: string;
   isActive: boolean;
   isPublic: boolean;
-  uptimePercent: number;
+  uptimePercent: number | null;
   displayStatus: DisplayStatus;
 };
 
@@ -75,7 +75,9 @@ function MonitorRowItem({ monitor }: { monitor: MonitorRow }) {
       <TableCell>
         <MonitorStatusBadge status={monitor.displayStatus} />
       </TableCell>
-      <TableCell className="hidden sm:table-cell">{monitor.uptimePercent}%</TableCell>
+      <TableCell className="hidden sm:table-cell">
+        {monitor.uptimePercent === null ? "—" : `${monitor.uptimePercent}%`}
+      </TableCell>
       <TableCell className="hidden md:table-cell">
         <Badge variant={monitor.isPublic ? "default" : "outline"}>
           {monitor.isPublic ? t("public") : t("private")}

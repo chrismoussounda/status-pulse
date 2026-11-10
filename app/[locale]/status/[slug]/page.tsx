@@ -1,32 +1,65 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
+import { cache } from "react";
 
 import { prisma } from "@/lib/prisma";
+import { getDailyBars, getUptimeWindows } from "@/lib/uptime-stats";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { MonitorCard } from "@/components/status-page/monitor-card";
 
-export default async function StatusPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-  const t = await getTranslations("statusPage");
+const HISTORY_DAYS = 90;
 
-  const user = await prisma.user.findUnique({
+// Shared by generateMetadata and the page so the lookup runs once per request.
+const getStatusPageOwner = cache((slug: string) =>
+  prisma.user.findUnique({
     where: { statusPageSlug: slug },
-    include: {
+    select: {
+      name: true,
       monitors: {
         where: { isPublic: true },
         orderBy: { createdAt: "asc" },
-        include: {
-          checks: { orderBy: { checkedAt: "desc" }, take: 100 },
-          incidents: { orderBy: { startedAt: "desc" }, take: 10 },
+        select: {
+          id: true,
+          name: true,
+          isActive: true,
+          lastStatus: true,
+          incidents: { orderBy: { startedAt: "desc" }, take: 5 },
         },
       },
     },
-  });
+  }),
+);
+
+type Props = { params: Promise<{ slug: string }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const [user, t] = await Promise.all([getStatusPageOwner(slug), getTranslations("statusPage")]);
+  if (!user) return { title: t("notFoundTitle") };
+  const name = user.name ?? slug;
+  return {
+    title: t("metaTitle", { name }),
+    description: t("metaDescription", { name }),
+  };
+}
+
+export default async function StatusPage({ params }: Props) {
+  const { slug } = await params;
+  const [user, t] = await Promise.all([getStatusPageOwner(slug), getTranslations("statusPage")]);
   if (!user) notFound();
 
-  const allUp = user.monitors.every((m) => m.checks[0]?.status !== "DOWN");
+  const monitorIds = user.monitors.map((m) => m.id);
+  const [uptime, bars] = await Promise.all([
+    getUptimeWindows(monitorIds),
+    getDailyBars(monitorIds, HISTORY_DAYS),
+  ]);
+
+  // Paused monitors aren't being checked, so their last result says
+  // nothing about the present and shouldn't turn the banner red.
+  const allUp = user.monitors.every((m) => !m.isActive || m.lastStatus !== "DOWN");
 
   return (
     <div className="min-h-screen bg-background">
@@ -57,7 +90,10 @@ export default async function StatusPage({ params }: { params: Promise<{ slug: s
               <MonitorCard
                 key={monitor.id}
                 name={monitor.name}
-                checks={monitor.checks}
+                isActive={monitor.isActive}
+                lastStatus={monitor.lastStatus}
+                uptime90d={uptime.get(monitor.id)?.uptime90d ?? null}
+                bars={bars.get(monitor.id) ?? []}
                 incidents={monitor.incidents}
               />
             ))}

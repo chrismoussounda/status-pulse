@@ -1,61 +1,49 @@
-import type { CheckStatus } from "@/app/generated/prisma/client";
-
-type CheckLike = { status: CheckStatus };
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 /**
- * Percentage of checks that were UP, rounded to 2 decimal places.
- * Returns 100 for an empty window (no data yet reads as "no known problems",
- * not "0% uptime").
- */
-export function computeUptimePercent(checks: CheckLike[]): number {
-  if (checks.length === 0) return 100;
-  const up = checks.filter((c) => c.status === "UP").length;
-  return Math.round((up / checks.length) * 10000) / 100;
-}
-
-const HOUR_MS = 60 * 60 * 1000;
-const DAY_MS = 24 * HOUR_MS;
-
-type WindowedCheck = CheckLike & { checkedAt: Date };
-
-/**
- * Percentage of UP checks within the window, null (not 0 or 100) when
- * there's no data in it — a monitor with zero checks in the last 24h
+ * UP checks as a percentage of all checks, rounded to 2 decimals. Null (not
+ * 0 or 100) when there's no data — a monitor with zero checks in a window
  * isn't "100% up", it's unmeasured.
  */
-export function calculateUptimeForWindow(
-  checks: WindowedCheck[],
-  now: Date,
-  windowMs: number,
-): number | null {
-  const since = now.getTime() - windowMs;
-  const inWindow = checks.filter((c) => c.checkedAt.getTime() >= since);
-  if (inWindow.length === 0) return null;
-  const up = inWindow.filter((c) => c.status === "UP").length;
-  return Math.round((up / inWindow.length) * 10000) / 100;
+export function uptimePercent(up: number, total: number): number | null {
+  if (total === 0) return null;
+  return Math.round((up / total) * 10000) / 100;
 }
 
-export type UptimeSummary = {
+export type UptimeWindows = {
   uptime24h: number | null;
   uptime7d: number | null;
   uptime30d: number | null;
+  uptime90d: number | null;
 };
 
-export function calculateUptimeSummary(checks: WindowedCheck[], now: Date): UptimeSummary {
-  return {
-    uptime24h: calculateUptimeForWindow(checks, now, DAY_MS),
-    uptime7d: calculateUptimeForWindow(checks, now, 7 * DAY_MS),
-    uptime30d: calculateUptimeForWindow(checks, now, 30 * DAY_MS),
-  };
+export const EMPTY_UPTIME: UptimeWindows = {
+  uptime24h: null,
+  uptime7d: null,
+  uptime30d: null,
+  uptime90d: null,
+};
+
+export type DailyCount = { day: Date; total: number; up: number };
+export type DailyBar = { day: Date; uptime: number | null };
+
+/** Midnight UTC of the given instant. */
+export function startOfUtcDay(date: Date): Date {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
 }
 
-type IncidentLike = {
-  id: string;
-  startedAt: Date;
-  resolvedAt: Date | null;
-  cause: string | null;
-};
+/**
+ * Expands sparse per-day counts (only days that had checks) into one bar per
+ * day for the last `days` days, oldest first, ending with today (UTC). Days
+ * without checks get `uptime: null` so the UI can show them as "no data".
+ */
+export function buildDailyBars(counts: DailyCount[], now: Date, days: number): DailyBar[] {
+  const byDay = new Map(counts.map((c) => [startOfUtcDay(c.day).getTime(), c]));
+  const today = startOfUtcDay(now).getTime();
 
-export function isIncidentOpen(incident: Pick<IncidentLike, "resolvedAt">): boolean {
-  return incident.resolvedAt === null;
+  return Array.from({ length: days }, (_, i) => {
+    const day = today - (days - 1 - i) * DAY_MS;
+    const count = byDay.get(day);
+    return { day: new Date(day), uptime: count ? uptimePercent(count.up, count.total) : null };
+  });
 }

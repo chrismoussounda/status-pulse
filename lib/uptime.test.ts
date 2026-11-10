@@ -1,72 +1,59 @@
 import { describe, expect, it } from "vitest";
-import {
-  calculateUptimeForWindow,
-  calculateUptimeSummary,
-  computeUptimePercent,
-  isIncidentOpen,
-} from "./uptime";
+import { buildDailyBars, startOfUtcDay, uptimePercent } from "./uptime";
 
-describe("computeUptimePercent", () => {
-  it("returns 100 for no checks", () => {
-    expect(computeUptimePercent([])).toBe(100);
+describe("uptimePercent", () => {
+  it("returns null when there are no checks", () => {
+    expect(uptimePercent(0, 0)).toBeNull();
   });
 
-  it("returns 100 when every check is UP", () => {
-    expect(computeUptimePercent([{ status: "UP" }, { status: "UP" }])).toBe(100);
+  it("returns 100 and 0 at the extremes", () => {
+    expect(uptimePercent(5, 5)).toBe(100);
+    expect(uptimePercent(0, 5)).toBe(0);
   });
 
-  it("returns 0 when every check is DOWN", () => {
-    expect(computeUptimePercent([{ status: "DOWN" }, { status: "DOWN" }])).toBe(0);
-  });
-
-  it("computes a percentage rounded to 2 decimals", () => {
-    const checks = [
-      { status: "UP" as const },
-      { status: "UP" as const },
-      { status: "DOWN" as const },
-    ];
-    expect(computeUptimePercent(checks)).toBeCloseTo(66.67, 2);
+  it("rounds to 2 decimals", () => {
+    expect(uptimePercent(2, 3)).toBe(66.67);
   });
 });
 
-describe("calculateUptimeForWindow", () => {
-  const now = new Date("2026-09-20T12:00:00Z");
-  const hoursAgo = (h: number) => new Date(now.getTime() - h * 60 * 60 * 1000);
-
-  it("returns null when there is no data in the window", () => {
-    const checks = [{ status: "UP" as const, checkedAt: hoursAgo(48) }];
-    expect(calculateUptimeForWindow(checks, now, 24 * 60 * 60 * 1000)).toBeNull();
-  });
-
-  it("only counts checks inside the window", () => {
-    const checks = [
-      { status: "DOWN" as const, checkedAt: hoursAgo(48) },
-      { status: "UP" as const, checkedAt: hoursAgo(1) },
-    ];
-    expect(calculateUptimeForWindow(checks, now, 24 * 60 * 60 * 1000)).toBe(100);
+describe("startOfUtcDay", () => {
+  it("truncates to midnight UTC", () => {
+    expect(startOfUtcDay(new Date("2026-03-04T23:59:59Z")).toISOString()).toBe(
+      "2026-03-04T00:00:00.000Z",
+    );
   });
 });
 
-describe("calculateUptimeSummary", () => {
-  it("computes independent 24h/7d/30d windows", () => {
-    const now = new Date("2026-09-20T12:00:00Z");
-    const checks = [
-      { status: "UP" as const, checkedAt: new Date(now.getTime() - 1 * 60 * 60 * 1000) },
-      { status: "DOWN" as const, checkedAt: new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000) },
-    ];
-    const summary = calculateUptimeSummary(checks, now);
-    expect(summary.uptime24h).toBe(100);
-    expect(summary.uptime7d).toBe(100);
-    expect(summary.uptime30d).toBe(50);
-  });
-});
+describe("buildDailyBars", () => {
+  const now = new Date("2026-03-10T15:00:00Z");
 
-describe("isIncidentOpen", () => {
-  it("is open when resolvedAt is null", () => {
-    expect(isIncidentOpen({ resolvedAt: null })).toBe(true);
+  it("returns one bar per day, oldest first, ending today", () => {
+    const bars = buildDailyBars([], now, 3);
+    expect(bars.map((b) => b.day.toISOString().slice(0, 10))).toEqual([
+      "2026-03-08",
+      "2026-03-09",
+      "2026-03-10",
+    ]);
   });
 
-  it("is not open when resolvedAt is set", () => {
-    expect(isIncidentOpen({ resolvedAt: new Date() })).toBe(false);
+  it("marks days without checks as null and fills days with data", () => {
+    const bars = buildDailyBars(
+      [
+        { day: new Date("2026-03-10T00:00:00Z"), total: 4, up: 3 },
+        { day: new Date("2026-03-08T00:00:00Z"), total: 2, up: 2 },
+      ],
+      now,
+      3,
+    );
+    expect(bars.map((b) => b.uptime)).toEqual([100, null, 75]);
+  });
+
+  it("ignores counts older than the requested range", () => {
+    const bars = buildDailyBars(
+      [{ day: new Date("2026-01-01T00:00:00Z"), total: 1, up: 0 }],
+      now,
+      2,
+    );
+    expect(bars.every((b) => b.uptime === null)).toBe(true);
   });
 });

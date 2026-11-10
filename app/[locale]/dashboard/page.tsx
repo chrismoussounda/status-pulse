@@ -3,46 +3,31 @@ import { PlusIcon } from "lucide-react";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { calculateUptimeForWindow } from "@/lib/uptime";
+import { getUptimeWindows } from "@/lib/uptime-stats";
+import { toDisplayStatus } from "@/lib/display-status";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { MonitorTable, type MonitorRow } from "@/components/monitor-table";
-import type { DisplayStatus } from "@/components/monitor-status-badge";
 
 export default async function DashboardPage() {
   const [session, t] = await Promise.all([auth(), getTranslations("dashboard")]);
   const userId = session!.user.id;
 
-  const now = new Date();
-  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
   const monitors = await prisma.monitor.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
-    include: {
-      checks: { where: { checkedAt: { gte: thirtyDaysAgo } }, orderBy: { checkedAt: "desc" } },
-    },
   });
+  const uptime = await getUptimeWindows(monitors.map((m) => m.id));
 
-  const rows: MonitorRow[] = monitors.map((monitor) => {
-    const lastCheck = monitor.checks[0];
-    const displayStatus: DisplayStatus = !monitor.isActive
-      ? "paused"
-      : !lastCheck
-        ? "pending"
-        : lastCheck.status === "UP"
-          ? "up"
-          : "down";
-
-    return {
-      id: monitor.id,
-      name: monitor.name,
-      url: monitor.url,
-      isActive: monitor.isActive,
-      isPublic: monitor.isPublic,
-      uptimePercent: calculateUptimeForWindow(monitor.checks, now, 30 * 24 * 60 * 60 * 1000) ?? 100,
-      displayStatus,
-    };
-  });
+  const rows: MonitorRow[] = monitors.map((monitor) => ({
+    id: monitor.id,
+    name: monitor.name,
+    url: monitor.url,
+    isActive: monitor.isActive,
+    isPublic: monitor.isPublic,
+    uptimePercent: uptime.get(monitor.id)?.uptime30d ?? null,
+    displayStatus: toDisplayStatus(monitor.isActive, monitor.lastStatus),
+  }));
 
   return (
     <div className="flex flex-col gap-6">

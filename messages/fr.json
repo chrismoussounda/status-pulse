@@ -115,7 +115,8 @@
     "uptime7d": "Disponibilité (7j)",
     "uptime30d": "Disponibilité (30j)",
     "noData": "Aucune donnée",
-    "latency": "Latence (20 dernières vérifications)"
+    "latency": "Latence (20 dernières vérifications)",
+    "dailyUptime": "Disponibilité quotidienne (90 jours)"
   },
   "statusPage": {
     "notFoundTitle": "Page de statut introuvable",
@@ -128,6 +129,14 @@
     "noPublicMonitors": "Aucun moniteur public pour le moment.",
     "resolved": "Résolu",
     "ongoing": "En cours",
-    "poweredBy": "Propulsé par"
+    "poweredBy": "Propulsé par",
+    "metaTitle": "Statut de {name}",
+    "metaDescription": "Statut en direct et historique de disponibilité de {name}."
+  },
+  "uptimeBars": {
+    "label": "Disponibilité quotidienne sur les {days} derniers jours",
+    "noData": "Aucune donnée",
+    "daysAgo": "Il y a {days} jours",
+    "today": "Aujourd'hui"
   }
 }

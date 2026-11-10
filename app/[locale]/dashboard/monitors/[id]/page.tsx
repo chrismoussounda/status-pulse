@@ -3,13 +3,15 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { calculateUptimeSummary } from "@/lib/uptime";
+import { getDailyBars, getUptimeWindows } from "@/lib/uptime-stats";
+import { toDisplayStatus } from "@/lib/display-status";
 import { getLatencySeries } from "@/lib/latency";
 import { formatTimestamp } from "@/lib/format-timestamp";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MonitorStatusBadge, type DisplayStatus } from "@/components/monitor-status-badge";
+import { MonitorStatusBadge } from "@/components/monitor-status-badge";
+import { UptimeBars } from "@/components/uptime-bars";
 import { MonitorDeleteButton } from "@/components/monitor-delete-button";
 import { LatencySparkline } from "@/components/latency-sparkline";
 
@@ -25,22 +27,18 @@ export default async function MonitorDetailPage({ params }: { params: Promise<{ 
   const monitor = await prisma.monitor.findFirst({
     where: { id, userId },
     include: {
-      checks: { orderBy: { checkedAt: "desc" }, take: 100 },
+      checks: { orderBy: { checkedAt: "desc" }, take: 20 },
       incidents: { orderBy: { startedAt: "desc" }, take: 10 },
     },
   });
   if (!monitor) notFound();
 
-  const lastCheck = monitor.checks[0];
-  const displayStatus: DisplayStatus = !monitor.isActive
-    ? "paused"
-    : !lastCheck
-      ? "pending"
-      : lastCheck.status === "UP"
-        ? "up"
-        : "down";
-
-  const uptime = calculateUptimeSummary(monitor.checks, new Date());
+  const [uptimeById, barsById] = await Promise.all([
+    getUptimeWindows([monitor.id]),
+    getDailyBars([monitor.id], 90),
+  ]);
+  const uptime = uptimeById.get(monitor.id)!;
+  const displayStatus = toDisplayStatus(monitor.isActive, monitor.lastStatus);
   const latencyPoints = getLatencySeries([...monitor.checks].reverse());
 
   const formatPercent = (value: number | null) => (value === null ? t("noData") : `${value}%`);
@@ -56,7 +54,7 @@ export default async function MonitorDetailPage({ params }: { params: Promise<{ 
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-heading text-2xl font-semibold tracking-tight">{monitor.name}</h1>
-          <p className="text-sm text-muted-foreground">{monitor.url}</p>
+          <p className="text-sm break-all text-muted-foreground">{monitor.url}</p>
         </div>
         <div className="flex items-center gap-2">
           <Link href={`/dashboard/monitors/${monitor.id}/edit`}>
@@ -108,6 +106,17 @@ export default async function MonitorDetailPage({ params }: { params: Promise<{ 
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm font-medium text-muted-foreground">
+            {t("dailyUptime")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <UptimeBars bars={barsById.get(monitor.id) ?? []} />
+        </CardContent>
+      </Card>
 
       {latencyPoints.length >= 2 ? (
         <Card>
