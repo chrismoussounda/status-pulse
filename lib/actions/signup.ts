@@ -4,7 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/password";
-import { generateStatusPageSlug } from "@/lib/slug";
+import { generateUniqueStatusPageSlug } from "@/lib/generate-unique-status-slug";
 import { signIn } from "@/lib/auth";
 import { redirect } from "@/i18n/navigation";
 import { buildSignupFormSchema, type SignupFormValues } from "@/lib/validation/monitor";
@@ -36,7 +36,7 @@ export async function signupAction(
       name,
       email,
       passwordHash,
-      statusPageSlug: generateStatusPageSlug(name),
+      statusPageSlug: await generateUniqueStatusPageSlug(name),
     },
   });
 
