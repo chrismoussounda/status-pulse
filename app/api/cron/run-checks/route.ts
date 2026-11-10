@@ -1,4 +1,5 @@
 import { runDueChecks } from "@/lib/check-runner";
+import { pruneOldChecks } from "@/lib/checks/prune-old-checks";
 import { isValidCronSecret } from "@/lib/checks/verify-cron-secret";
 
 export const dynamic = "force-dynamic";
@@ -10,5 +11,11 @@ export async function POST(req: Request) {
   }
 
   const result = await runDueChecks();
-  return Response.json(result);
+  // Housekeeping is best-effort: a failed cleanup must not fail the run.
+  const pruned = await pruneOldChecks().catch((err: unknown) => {
+    console.error("Failed to prune old checks", err);
+    return 0;
+  });
+
+  return Response.json({ ...result, pruned });
 }

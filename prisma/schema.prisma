@@ -10,7 +10,7 @@ datasource db {
   provider  = "postgresql"
   // Pooled connection string — what the app uses at runtime. Required on
   // serverless (Vercel + Neon) to avoid exhausting the connection cap; see
-  // the Engineering Decisions section in the README.
+  // docs/decisions.md.
   url       = env("DATABASE_URL")
   // Unpooled connection string — what `prisma migrate` needs (migrations
   // can't run through a connection pooler). Same value locally.
@@ -89,6 +89,8 @@ model Check {
 
   // Uptime %/latency calculations and "due monitors" queries both scan this range.
   @@index([monitorId, checkedAt])
+  // Lets the retention cleanup delete old rows across all monitors without a full scan.
+  @@index([checkedAt])
 }
 
 model Incident {

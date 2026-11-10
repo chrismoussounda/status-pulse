@@ -136,7 +136,7 @@ paths:
       summary: Run due checks for every user's monitors
       description: >
         Called by the GitHub Actions scheduled workflow every 5 minutes.
-        Not user-facing.
+        Also deletes check history older than 90 days. Not user-facing.
       security: [{ cronSecret: [] }]
       responses:
         "200":
@@ -152,6 +152,11 @@ paths:
                     {
                       type: integer,
                       description: "Checks that errored before a result could be recorded",
+                    }
+                  pruned:
+                    {
+                      type: integer,
+                      description: "Check rows older than the 90-day retention window that were deleted",
                     }
         "401":
           description: Missing or incorrect bearer token
