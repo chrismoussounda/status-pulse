@@ -55,6 +55,33 @@ describe("POST /api/signup", () => {
     expect(count).toBe(1);
   });
 
+  it("returns 409, not 500, when two signups for the same email race", async () => {
+    const email = `signup-${crypto.randomUUID()}@example.com`;
+    createdEmails.push(email);
+
+    const statuses = await Promise.all(
+      [1, 2, 3].map(() =>
+        postSignup({ name: "Race", email, password: "supersecret123" }).then((r) => r.status),
+      ),
+    );
+
+    expect(statuses.sort()).toEqual([201, 409, 409]);
+    expect(await prisma.user.count({ where: { email } })).toBe(1);
+  });
+
+  it("treats emails case-insensitively", async () => {
+    const email = `signup-${crypto.randomUUID()}@example.com`;
+    createdEmails.push(email);
+
+    await postSignup({ name: "Case", email, password: "supersecret123" });
+    const res = await postSignup({
+      name: "Case",
+      email: email.toUpperCase(),
+      password: "x".repeat(8),
+    });
+    expect(res.status).toBe(409);
+  });
+
   it("rejects invalid input with 400 before touching the database", async () => {
     const res = await postSignup({ name: "", email: "not-an-email", password: "short" });
     expect(res.status).toBe(400);

@@ -42,11 +42,16 @@ type AuthValidationTranslator = (
   key: "nameRequired" | "emailInvalid" | "passwordMin" | "passwordRequired" | "passwordsMismatch",
 ) => string;
 
+// Emails are stored lowercase so "Ada@x.com" and "ada@x.com" are one account.
+function normalizedEmail(message: string) {
+  return z.string().trim().toLowerCase().pipe(z.email(message));
+}
+
 export function buildSignupFormSchema(t: AuthValidationTranslator) {
   return z
     .object({
       name: z.string().trim().min(1, t("nameRequired")).max(100),
-      email: z.email(t("emailInvalid")),
+      email: normalizedEmail(t("emailInvalid")),
       password: z.string().min(8, t("passwordMin")),
       confirmPassword: z.string(),
     })
@@ -58,7 +63,7 @@ export function buildSignupFormSchema(t: AuthValidationTranslator) {
 
 export function buildLoginFormSchema(t: AuthValidationTranslator) {
   return z.object({
-    email: z.email(t("emailInvalid")),
+    email: normalizedEmail(t("emailInvalid")),
     password: z.string().min(1, t("passwordRequired")),
   });
 }

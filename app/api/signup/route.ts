@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/password";
 import { generateUniqueStatusPageSlug } from "@/lib/generate-unique-status-slug";
 import { signupSchema } from "@/lib/validation/auth-api";
+import { isUniqueViolation } from "@/lib/is-unique-violation";
+
+const EMAIL_TAKEN = "An account with this email already exists.";
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
@@ -18,10 +21,7 @@ export async function POST(request: Request) {
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
-    return NextResponse.json(
-      { error: "An account with this email already exists." },
-      { status: 409 },
-    );
+    return NextResponse.json({ error: EMAIL_TAKEN }, { status: 409 });
   }
 
   const [passwordHash, statusPageSlug] = await Promise.all([
@@ -29,10 +29,17 @@ export async function POST(request: Request) {
     generateUniqueStatusPageSlug(name),
   ]);
 
-  const user = await prisma.user.create({
-    data: { name, email, passwordHash, statusPageSlug },
-    select: { id: true, email: true, name: true, statusPageSlug: true },
-  });
-
-  return NextResponse.json({ user }, { status: 201 });
+  try {
+    const user = await prisma.user.create({
+      data: { name, email, passwordHash, statusPageSlug },
+      select: { id: true, email: true, name: true, statusPageSlug: true },
+    });
+    return NextResponse.json({ user }, { status: 201 });
+  } catch (err) {
+    // Lost a race with a concurrent signup for the same email.
+    if (isUniqueViolation(err, "email")) {
+      return NextResponse.json({ error: EMAIL_TAKEN }, { status: 409 });
+    }
+    throw err;
+  }
 }

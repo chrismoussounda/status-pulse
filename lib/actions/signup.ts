@@ -7,6 +7,7 @@ import { hashPassword } from "@/lib/password";
 import { generateUniqueStatusPageSlug } from "@/lib/generate-unique-status-slug";
 import { signIn } from "@/lib/auth";
 import { redirect } from "@/i18n/navigation";
+import { isUniqueViolation } from "@/lib/is-unique-violation";
 import { buildSignupFormSchema, type SignupFormValues } from "@/lib/validation/monitor";
 
 export async function signupAction(
@@ -31,14 +32,19 @@ export async function signupAction(
   }
 
   const passwordHash = await hashPassword(password);
-  await prisma.user.create({
-    data: {
-      name,
-      email,
-      passwordHash,
-      statusPageSlug: await generateUniqueStatusPageSlug(name),
-    },
-  });
+  try {
+    await prisma.user.create({
+      data: {
+        name,
+        email,
+        passwordHash,
+        statusPageSlug: await generateUniqueStatusPageSlug(name),
+      },
+    });
+  } catch (err) {
+    if (isUniqueViolation(err, "email")) return { error: tSignup("errorEmailTaken") };
+    throw err;
+  }
 
   await signIn("credentials", { email, password, redirect: false });
   redirect({ href: "/dashboard", locale });

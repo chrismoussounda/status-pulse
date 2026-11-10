@@ -1,6 +1,8 @@
 import { Resend } from "resend";
 
-const FROM_ADDRESS = "StatusPulse <alerts@statuspulse.dev>";
+// Resend only sends from domains you've verified. Its shared test sender
+// works without setup but only delivers to your own Resend account email.
+const DEFAULT_FROM = "StatusPulse <onboarding@resend.dev>";
 
 let cachedClient: Resend | null = null;
 
@@ -32,10 +34,13 @@ export async function sendEmail(input: SendEmailInput): Promise<void> {
     return;
   }
 
-  await client.emails.send({
-    from: FROM_ADDRESS,
+  // The SDK reports API failures in the return value rather than throwing,
+  // so surface them here or the caller's .catch() never sees them.
+  const { error } = await client.emails.send({
+    from: process.env.EMAIL_FROM || DEFAULT_FROM,
     to: input.to,
     subject: input.subject,
     html: input.html,
   });
+  if (error) throw new Error(`Resend rejected email to ${input.to}: ${error.message}`);
 }
