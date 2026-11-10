@@ -7,7 +7,7 @@ status page per account, in French or English.
 > **Status:** feature-complete for this phase — auth, monitor CRUD, the check
 > runner with consecutive-failure incident detection and email
 > notifications, dashboard uptime/latency stats, and the public status page
-> are all in. See the [issues](../../issues) for the backlog.
+> are all in.
 
 ## Stack
 
