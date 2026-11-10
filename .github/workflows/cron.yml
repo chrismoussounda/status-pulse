@@ -5,11 +5,26 @@ on:
     - cron: "*/5 * * * *"
   workflow_dispatch:
 
+# A slow run should never overlap the next one and double-check monitors.
+concurrency:
+  group: run-checks
+  cancel-in-progress: false
+
 jobs:
   run-checks:
     runs-on: ubuntu-latest
+    timeout-minutes: 3
     steps:
       - name: Call the check runner
+        env:
+          # APP_URL is a repository variable (not secret); CRON_SECRET is a secret.
+          APP_URL: ${{ vars.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
-          curl -sf -X POST "${{ secrets.APP_URL }}/api/cron/run-checks" \
-            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
+          if [ -z "$APP_URL" ] || [ -z "$CRON_SECRET" ]; then
+            echo "::error::Set the APP_URL repository variable and the CRON_SECRET secret."
+            exit 1
+          fi
+          curl --fail-with-body --silent --show-error --max-time 90 \
+            -X POST "$APP_URL/api/cron/run-checks" \
+            -H "Authorization: Bearer $CRON_SECRET"
