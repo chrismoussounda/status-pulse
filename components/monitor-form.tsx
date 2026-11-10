@@ -188,7 +188,7 @@ export function MonitorForm({ defaultValues, onSubmitAction, mode }: MonitorForm
             control={form.control}
             name="isActive"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between rounded-lg border border-border p-3">
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border border-border p-4">
                 <div className="space-y-0.5">
                   <FormLabel>{t("active")}</FormLabel>
                   <FormDescription>{t("activeDescription")}</FormDescription>
@@ -204,7 +204,7 @@ export function MonitorForm({ defaultValues, onSubmitAction, mode }: MonitorForm
             control={form.control}
             name="isPublic"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between rounded-lg border border-border p-3">
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border border-border p-4">
                 <div className="space-y-0.5">
                   <FormLabel>{t("public")}</FormLabel>
                   <FormDescription>{t("publicDescription")}</FormDescription>
@@ -218,7 +218,7 @@ export function MonitorForm({ defaultValues, onSubmitAction, mode }: MonitorForm
         </div>
 
         {formError ? <p className="text-sm text-destructive">{formError}</p> : null}
-        <Button type="submit" disabled={isPending} className="h-10 self-start px-6">
+        <Button type="submit" disabled={isPending} className="self-start">
           {isPending ? t("saving") : mode === "create" ? t("createSubmit") : t("editSubmit")}
         </Button>
       </form>

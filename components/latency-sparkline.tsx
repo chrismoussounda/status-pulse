@@ -21,7 +21,8 @@ export function LatencySparkline({ points }: { points: LatencyPoint[] }) {
   return (
     <svg
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-      className="h-12 w-full text-primary"
+      className="h-16 w-full text-primary"
+      preserveAspectRatio="none"
       role="img"
       aria-label={`Latency from ${min}ms to ${max}ms over the last ${points.length} checks`}
     >
@@ -32,6 +33,7 @@ export function LatencySparkline({ points }: { points: LatencyPoint[] }) {
         strokeWidth={1.5}
         strokeLinejoin="round"
         strokeLinecap="round"
+        vectorEffect="non-scaling-stroke"
       />
     </svg>
   );

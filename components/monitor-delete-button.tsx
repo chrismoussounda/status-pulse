@@ -19,7 +19,7 @@ export function MonitorDeleteButton({ id }: { id: string }) {
   }
 
   return (
-    <Button variant="destructive" size="sm" disabled={isPending} onClick={handleDelete}>
+    <Button variant="destructive" disabled={isPending} onClick={handleDelete}>
       <Trash2Icon className="size-4" />
       {t("delete")}
     </Button>

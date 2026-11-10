@@ -76,7 +76,7 @@ export function LoginForm() {
           )}
         />
         {formError ? <p className="text-sm text-destructive">{formError}</p> : null}
-        <Button type="submit" disabled={isPending} className="mt-2 h-10">
+        <Button type="submit" disabled={isPending} className="mt-2">
           {isPending ? t("submitting") : t("submit")}
         </Button>
       </form>

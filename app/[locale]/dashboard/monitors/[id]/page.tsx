@@ -46,7 +46,7 @@ export default async function MonitorDetailPage({ params }: { params: Promise<{ 
   const formatPercent = (value: number | null) => (value === null ? t("noData") : `${value}%`);
 
   return (
-    <div className="flex max-w-3xl flex-col gap-6 3xl:max-w-4xl">
+    <div className="flex flex-col gap-6">
       <div>
         <Link href="/dashboard" className="text-sm text-muted-foreground hover:underline">
           &larr; {t("backToDashboard")}
@@ -60,9 +60,7 @@ export default async function MonitorDetailPage({ params }: { params: Promise<{ 
         </div>
         <div className="flex items-center gap-2">
           <Link href={`/dashboard/monitors/${monitor.id}/edit`}>
-            <Button variant="outline" size="sm">
-              {t("edit")}
-            </Button>
+            <Button variant="outline">{t("edit")}</Button>
           </Link>
           <MonitorDeleteButton id={monitor.id} />
         </div>
