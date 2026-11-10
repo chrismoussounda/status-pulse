@@ -3,50 +3,207 @@ info:
   title: StatusPulse API
   version: "1.0"
   description: >
-    StatusPulse's authenticated CRUD (signup, login, monitor management)
-    runs through Next.js Server Actions, not REST endpoints, and NextAuth's
-    own routes (/api/auth/*) are framework-managed — neither is documented
-    here as an HTTP contract, since neither has a stable one to document.
-    This spec covers the one real HTTP endpoint with an external caller:
-    the check-runner trigger that GitHub Actions calls on a schedule (see
-    .github/workflows/cron.yml).
+    Monitor CRUD, account signup, and the check-runner trigger. NextAuth's
+    own routes (/api/auth/*) are framework-managed and not documented here.
 servers:
   - url: /api
 
 paths:
-  /cron/run-checks:
+  /signup:
     post:
-      operationId: runDueChecks
-      summary: Run every check currently due
-      description: >
-        Finds monitors whose intervalSeconds has elapsed since
-        lastCheckedAt, checks them with bounded concurrency, and records
-        each result — updating the monitor's denormalized status, opening
-        or resolving an Incident per the consecutive-failure threshold, and
-        sending a best-effort email notification on open/resolve.
-      security:
-        - cronSecret: []
+      operationId: createAccount
+      summary: Create an account
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name: { type: string, minLength: 1, maxLength: 100 }
+                email: { type: string, format: email }
+                password: { type: string, minLength: 8 }
       responses:
-        "200":
-          description: Checks ran (possibly zero, if none were due)
+        "201":
+          description: Account created
           content:
             application/json:
               schema:
                 type: object
-                required: [checked]
                 properties:
-                  checked:
-                    type: integer
-                    description: Number of monitors checked this run
-                    example: 3
+                  user:
+                    type: object
+                    properties:
+                      id: { type: string }
+                      email: { type: string }
+                      name: { type: string, nullable: true }
+                      statusPageSlug: { type: string }
+        "400":
+          description: Validation error
+        "409":
+          description: Email already registered
+
+  /monitors:
+    get:
+      operationId: listMonitors
+      summary: List the authenticated user's monitors
+      security: [{ sessionAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  monitors:
+                    type: array
+                    items: { $ref: "#/components/schemas/Monitor" }
         "401":
-          description: Missing or invalid CRON_SECRET bearer token
+          description: Not signed in
+    post:
+      operationId: createMonitor
+      summary: Create a monitor
+      security: [{ sessionAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateMonitorInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  monitor: { $ref: "#/components/schemas/Monitor" }
+        "400":
+          description: Validation error (bad URL, interval out of 60s-24h range, etc.)
+        "401":
+          description: Not signed in
+
+  /monitors/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      operationId: getMonitor
+      summary: Get one monitor
+      security: [{ sessionAuth: [] }]
+      responses:
+        "200":
+          description: OK
+        "404":
+          description: >
+            Not found — returned both when the monitor doesn't exist and
+            when it belongs to another user, so a request never confirms
+            another account's monitor IDs.
+    patch:
+      operationId: updateMonitor
+      summary: Update a monitor
+      security: [{ sessionAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateMonitorInput" }
+      responses:
+        "200":
+          description: Updated
+        "400":
+          description: Validation error, or an empty body with no fields to update
+        "404":
+          description: Not found (nonexistent or not yours — see GET above)
+    delete:
+      operationId: deleteMonitor
+      summary: Delete a monitor
+      security: [{ sessionAuth: [] }]
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found (nonexistent or not yours — see GET above)
+
+  /cron/run-checks:
+    post:
+      operationId: runChecks
+      summary: Run due checks for every user's monitors
+      description: >
+        Called by the GitHub Actions scheduled workflow every 5 minutes.
+        Not user-facing.
+      security: [{ cronSecret: [] }]
+      responses:
+        "200":
+          description: Checks ran
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  checked: { type: integer, description: "Monitors that were due and checked" }
+                  skipped: { type: integer, description: "Active monitors not yet due" }
+                  failed:
+                    {
+                      type: integer,
+                      description: "Checks that errored before a result could be recorded",
+                    }
+        "401":
+          description: Missing or incorrect bearer token
 
 components:
   securitySchemes:
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: authjs.session-token
+      description: Set by NextAuth on login (/api/auth/callback/credentials).
     cronSecret:
       type: http
       scheme: bearer
-      description: >
-        Compared in constant time (lib/checks/verify-cron-secret.ts)
-        against the CRON_SECRET environment variable.
+      description: Must equal the server's CRON_SECRET env var.
+
+  schemas:
+    Monitor:
+      type: object
+      properties:
+        id: { type: string }
+        userId: { type: string }
+        name: { type: string }
+        url: { type: string, format: uri }
+        method: { type: string, enum: [GET, POST, PUT, HEAD] }
+        expectedStatus: { type: integer }
+        intervalSeconds: { type: integer }
+        isActive: { type: boolean }
+        isPublic: { type: boolean }
+        lastStatus: { type: string, enum: [UP, DOWN], nullable: true }
+        lastCheckedAt: { type: string, format: date-time, nullable: true }
+        consecutiveFailures: { type: integer }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    CreateMonitorInput:
+      type: object
+      required: [name, url]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
+        url: { type: string, format: uri, description: "Must be http:// or https://" }
+        method: { type: string, enum: [GET, POST, PUT, HEAD], default: GET }
+        expectedStatus: { type: integer, minimum: 100, maximum: 599, default: 200 }
+        intervalSeconds:
+          type: integer
+          minimum: 60
+          maximum: 86400
+          default: 300
+          description: "60s floor, 24h ceiling"
+        isPublic: { type: boolean, default: true }
+
+    UpdateMonitorInput:
+      allOf:
+        - $ref: "#/components/schemas/CreateMonitorInput"
+      description: All fields optional; at least one required.

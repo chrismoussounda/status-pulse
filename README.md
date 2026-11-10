@@ -110,11 +110,23 @@ production; it needs the `APP_URL` and `CRON_SECRET` repo secrets set.
 
 ## API
 
-The one real HTTP endpoint with an external caller — the check-runner
-trigger GitHub Actions calls on a schedule — is documented in
-[`docs/openapi.yaml`](docs/openapi.yaml). Signup, login, and monitor CRUD
-run through NextAuth's own routes and Next.js Server Actions rather than a
-conventional REST API, so there's nothing to spec there.
+The web UI talks to the database through Next.js Server Actions, and the
+same capabilities are also exposed as a REST API for scripts and integrations.
+Full spec: [`docs/openapi.yaml`](docs/openapi.yaml) (paste into
+[editor.swagger.io](https://editor.swagger.io) to browse it rendered).
+
+| Method | Path                   | Auth                 | What                                       |
+| ------ | ---------------------- | -------------------- | ------------------------------------------ |
+| POST   | `/api/signup`          | none                 | Create an account                          |
+| GET    | `/api/monitors`        | session              | List your monitors                         |
+| POST   | `/api/monitors`        | session              | Create a monitor                           |
+| GET    | `/api/monitors/{id}`   | session              | Get one monitor                            |
+| PATCH  | `/api/monitors/{id}`   | session              | Update a monitor                           |
+| DELETE | `/api/monitors/{id}`   | session              | Delete a monitor                           |
+| POST   | `/api/cron/run-checks` | `CRON_SECRET` bearer | Run due checks (GitHub Actions calls this) |
+
+`/api/monitors/{id}` returns 404 — never 403 — for another account's
+monitor; see Engineering Decisions.
 
 ## Deployment
 
