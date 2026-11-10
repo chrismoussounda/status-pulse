@@ -27,7 +27,7 @@ export default async function EditMonitorPage({ params }: { params: Promise<{ id
           isActive: monitor.isActive,
           isPublic: monitor.isPublic,
         }}
-        onSubmitAction={(values) => updateMonitor(monitor.id, values)}
+        onSubmitAction={updateMonitor.bind(null, monitor.id)}
       />
     </div>
   );
