@@ -39,7 +39,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
   // Scoping the WHERE by userId (not just id) means a request for someone
   // else's monitor matches zero rows and falls into the same 404 branch as
   // a monitor that doesn't exist at all — never a 403, which would confirm
-  // the id belongs to another account. See README Engineering Decisions.
+  // the id belongs to another account. See docs/decisions.md.
   const { count } = await prisma.monitor.updateMany({
     where: { id, userId },
     data: parsed.data,

@@ -13,8 +13,8 @@ const prisma = new PrismaClient();
 const DEMO_EMAIL = "demo@statuspulse.dev";
 const DEMO_PASSWORD = "demo-password-123";
 const DEMO_SLUG = "demo";
-const CHECK_INTERVAL_HOURS = 6;
-const HISTORY_DAYS = 30;
+const CHECK_INTERVAL_HOURS = 1;
+const HISTORY_DAYS = 90;
 
 type MonitorSeed = {
   name: string;
@@ -131,9 +131,16 @@ async function main() {
     now,
   );
 
+  // Docs Site: two isolated failed checks — below the 3-failure threshold,
+  // so they dent the daily uptime bars but never open an incident.
   await seedMonitor(
     user.id,
-    { name: "Docs Site", url: "https://docs.example.com", isPublic: true, downAt: new Set() },
+    {
+      name: "Docs Site",
+      url: "https://docs.example.com",
+      isPublic: true,
+      downAt: new Set([totalChecks - 41 * checksPerDay, totalChecks - 12 * checksPerDay]),
+    },
     now,
   );
 
@@ -159,6 +166,7 @@ async function main() {
       resolvedAt: new Date(
         apiIncidentStartedAt.getTime() + 3 * CHECK_INTERVAL_HOURS * 60 * 60 * 1000,
       ),
+      cause: "Expected status 200, got 503",
     },
   });
 
@@ -166,7 +174,12 @@ async function main() {
     now.getTime() - 4 * CHECK_INTERVAL_HOURS * 60 * 60 * 1000,
   );
   await prisma.incident.create({
-    data: { monitorId: checkout.id, startedAt: checkoutIncidentStartedAt, resolvedAt: null },
+    data: {
+      monitorId: checkout.id,
+      startedAt: checkoutIncidentStartedAt,
+      resolvedAt: null,
+      cause: "Expected status 200, got 503",
+    },
   });
 
   console.log(`Seeded demo user ${DEMO_EMAIL} / ${DEMO_PASSWORD}`);

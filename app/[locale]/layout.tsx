@@ -26,7 +26,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "StatusPulse",
+  title: { default: "StatusPulse", template: "%s · StatusPulse" },
   description: "Uptime monitoring & public status pages.",
 };
 
