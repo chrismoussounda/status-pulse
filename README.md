@@ -42,6 +42,12 @@ calling a stateless, secret-protected route on Vercel. See **Engineering
 Decisions** for why, and for the concurrency/timeout math that keeps one
 route invocation inside a serverless time budget.
 
+## Screenshots
+
+| Dashboard                                    | Public status page                                      | Mobile (390px)                                                                         |
+| -------------------------------------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Public status page](docs/screenshots/status-page.png) | <img src="docs/screenshots/mobile-dashboard.png" width="200" alt="Mobile dashboard" /> |
+
 ## Getting started
 
 Requires Node 22+, [pnpm](https://pnpm.io), and Docker.
