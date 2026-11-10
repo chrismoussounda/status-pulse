@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { ActivitySquareIcon, BellRingIcon, GlobeIcon } from "lucide-react";
 
 import { Link } from "@/i18n/navigation";
+import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -23,7 +24,7 @@ export default async function Home() {
   return (
     <div className="flex min-h-screen flex-col">
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-5 sm:px-6 lg:px-8 3xl:max-w-[1600px] 3xl:px-12">
-        <span className="font-heading text-lg font-semibold tracking-tight">StatusPulse</span>
+        <Logo />
         <div className="flex items-center gap-1">
           <LocaleSwitcher />
           <ThemeToggle />
@@ -40,12 +41,10 @@ export default async function Home() {
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Link href="/signup">
-            <Button size="lg" className="h-11 px-6">
-              {t("cta")}
-            </Button>
+            <Button size="lg">{t("cta")}</Button>
           </Link>
           <Link href="/login">
-            <Button size="lg" variant="outline" className="h-11 px-6">
+            <Button size="lg" variant="outline">
               {t("secondaryCta")}
             </Button>
           </Link>
@@ -62,17 +61,6 @@ export default async function Home() {
             </Card>
           ))}
         </div>
-
-        <p className="mt-16 text-sm text-muted-foreground">
-          {t("underConstruction")}{" "}
-          <a
-            href="https://github.com/chrismoussounda/status-pulse/issues"
-            className="font-medium underline underline-offset-2"
-          >
-            {t("issueTracker")}
-          </a>
-          .
-        </p>
       </main>
     </div>
   );
