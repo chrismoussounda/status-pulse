@@ -24,16 +24,33 @@ describe("isPrivateAddress", () => {
     "fd00::1",
     "fe80::1",
     "::ffff:127.0.0.1",
+    // The hex forms URL parsing produces for IPv4-mapped addresses.
+    "::ffff:7f00:1",
+    "::ffff:a9fe:a9fe",
+    "0:0:0:0:0:ffff:7f00:1",
+    "::7f00:1",
+    "64:ff9b::7f00:1",
+    "64:ff9b::169.254.169.254",
+    "2002:7f00:1::1",
+    "FE80::1",
+    "fe80::1%eth0",
+    "ff02::1",
   ])("flags %s as private", (ip) => {
     expect(isPrivateAddress(ip)).toBe(true);
   });
 
-  it.each(["8.8.8.8", "1.1.1.1", "172.32.0.1", "93.184.216.34", "2606:4700::1111"])(
-    "allows public address %s",
-    (ip) => {
-      expect(isPrivateAddress(ip)).toBe(false);
-    },
-  );
+  it.each([
+    "8.8.8.8",
+    "1.1.1.1",
+    "172.32.0.1",
+    "93.184.216.34",
+    "2606:4700::1111",
+    "::ffff:808:808",
+    "64:ff9b::808:808",
+    "2002:808:808::1",
+  ])("allows public address %s", (ip) => {
+    expect(isPrivateAddress(ip)).toBe(false);
+  });
 });
 
 describe("assertPublicTarget", () => {
@@ -51,6 +68,13 @@ describe("assertPublicTarget", () => {
       PrivateTargetError,
     );
     await expect(assertPublicTarget("http://[::1]/")).rejects.toThrow(PrivateTargetError);
+    // URL parsing turns this into [::ffff:7f00:1]; it must still be caught.
+    await expect(assertPublicTarget("http://[::ffff:127.0.0.1]/")).rejects.toThrow(
+      PrivateTargetError,
+    );
+    await expect(assertPublicTarget("http://[64:ff9b::a9fe:a9fe]/")).rejects.toThrow(
+      PrivateTargetError,
+    );
     expect(lookup).not.toHaveBeenCalled();
   });
 

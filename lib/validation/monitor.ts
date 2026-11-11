@@ -29,7 +29,8 @@ type MonitorFormTranslator = (key: "name" | "url" | "urlInvalid" | "intervalMin"
 export function buildMonitorFormSchema(t: MonitorFormTranslator) {
   return z.object({
     name: z.string().trim().min(1, t("name")).max(100),
-    url: z.url(t("urlInvalid")),
+    // Same rule as the REST API: only http(s), never javascript:, file:, etc.
+    url: z.url({ protocol: /^https?$/, error: t("urlInvalid") }),
     method: z.enum(httpMethods),
     expectedStatus: z.number().int().min(100).max(599),
     intervalSeconds: z.number().int().min(60, t("intervalMin")).max(86400),

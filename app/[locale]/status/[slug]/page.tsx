@@ -26,7 +26,13 @@ const getStatusPageOwner = cache((slug: string) =>
           name: true,
           isActive: true,
           lastStatus: true,
-          incidents: { orderBy: { startedAt: "desc" }, take: 5 },
+          // No `cause`: it's the raw check error, which can name internal
+          // hosts the public page otherwise hides. Owners see it in the dashboard.
+          incidents: {
+            orderBy: { startedAt: "desc" },
+            take: 5,
+            select: { id: true, startedAt: true, resolvedAt: true },
+          },
         },
       },
     },

@@ -87,3 +87,7 @@ fresh Postgres on every pull request.
 
 GitHub pauses scheduled workflows after 60 days without repository activity;
 re-enable it from the Actions tab if that happens.
+
+## License
+
+[MIT](LICENSE)

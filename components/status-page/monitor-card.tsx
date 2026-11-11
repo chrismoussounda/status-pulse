@@ -14,7 +14,7 @@ type MonitorCardProps = {
   lastStatus: CheckStatus | null;
   uptime90d: number | null;
   bars: DailyBar[];
-  incidents: { id: string; startedAt: Date; resolvedAt: Date | null; cause: string | null }[];
+  incidents: { id: string; startedAt: Date; resolvedAt: Date | null }[];
 };
 
 export async function MonitorCard({

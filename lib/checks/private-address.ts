@@ -33,14 +33,51 @@ function isPrivateIpv4(ip: string): boolean {
   });
 }
 
+/** Expands an IPv6 address (any notation, incl. a dotted IPv4 tail) to 8 hextets. */
+function ipv6ToHextets(ip: string): number[] {
+  let address = ip.toLowerCase().split("%")[0]; // drop a zone id like %eth0
+  const dottedTail = address.match(/(\d+\.\d+\.\d+\.\d+)$/);
+  if (dottedTail) {
+    const v4 = ipv4ToInt(dottedTail[1]);
+    const tail = `${(v4 >>> 16).toString(16)}:${(v4 & 0xffff).toString(16)}`;
+    address = address.slice(0, -dottedTail[1].length) + tail;
+  }
+  const [head, rest] = address.split("::");
+  const headParts = head ? head.split(":") : [];
+  const restParts = rest ? rest.split(":") : [];
+  const zeros = rest === undefined ? [] : Array(8 - headParts.length - restParts.length).fill("0");
+  return [...headParts, ...zeros, ...restParts].map((part) => parseInt(part, 16));
+}
+
+function hextetsToIpv4(high: number, low: number): string {
+  return [high >> 8, high & 0xff, low >> 8, low & 0xff].join(".");
+}
+
 function isPrivateIpv6(ip: string): boolean {
-  const lower = ip.toLowerCase();
-  if (lower === "::" || lower === "::1") return true;
-  // IPv4-mapped (::ffff:10.0.0.1) — judge by the embedded IPv4 address.
-  const mapped = lower.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/);
-  if (mapped) return isPrivateIpv4(mapped[1]);
-  // fc00::/7 unique local, fe80::/10 link-local, ff00::/8 multicast.
-  return /^f[cd]/.test(lower) || /^fe[89ab]/.test(lower) || lower.startsWith("ff");
+  const h = ipv6ToHextets(ip);
+  const firstSixZero = h.slice(0, 6).every((part) => part === 0);
+  const embeddedIpv4 = hextetsToIpv4(h[6], h[7]);
+
+  // ::/128 unspecified, ::1/128 loopback, and the deprecated ::/96
+  // IPv4-compatible form (::a.b.c.d) — all of ::/96 is non-public.
+  if (firstSixZero) return true;
+  // ::ffff:0:0/96 IPv4-mapped. URL parsing rewrites ::ffff:127.0.0.1 to
+  // ::ffff:7f00:1, so this must work on hextets, not the dotted text form.
+  if (h.slice(0, 5).every((part) => part === 0) && h[5] === 0xffff) {
+    return isPrivateIpv4(embeddedIpv4);
+  }
+  // 64:ff9b::/96 NAT64 — the gateway forwards to the embedded IPv4 address.
+  if (h[0] === 0x64 && h[1] === 0xff9b && h.slice(2, 6).every((part) => part === 0)) {
+    return isPrivateIpv4(embeddedIpv4);
+  }
+  // 2002::/16 6to4 — the tunnel endpoint is the IPv4 address in hextets 1–2.
+  if (h[0] === 0x2002) return isPrivateIpv4(hextetsToIpv4(h[1], h[2]));
+
+  return (
+    (h[0] & 0xfe00) === 0xfc00 || // fc00::/7 unique local
+    (h[0] & 0xffc0) === 0xfe80 || // fe80::/10 link-local
+    (h[0] & 0xff00) === 0xff00 // ff00::/8 multicast
+  );
 }
 
 export function isPrivateAddress(ip: string): boolean {

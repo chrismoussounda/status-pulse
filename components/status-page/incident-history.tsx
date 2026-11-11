@@ -6,7 +6,6 @@ type Incident = {
   id: string;
   startedAt: Date;
   resolvedAt: Date | null;
-  cause: string | null;
 };
 
 export async function IncidentHistory({ incidents }: { incidents: Incident[] }) {
@@ -32,7 +31,6 @@ export async function IncidentHistory({ incidents }: { incidents: Incident[] }) 
               {incident.resolvedAt ? t("resolved") : t("ongoing")}
             </Badge>
           </div>
-          {incident.cause ? <span className="text-muted-foreground">{incident.cause}</span> : null}
         </li>
       ))}
     </ul>

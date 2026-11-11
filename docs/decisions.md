@@ -30,8 +30,16 @@ flapping scenario is a plain unit test. The failure count is stored on
 **SSRF protection.** Monitor URLs are user input fetched by our server. Every
 request, including each redirect hop (redirects are followed manually), goes
 through `assertPublicTarget`, which resolves the host and refuses loopback,
-private, link-local (cloud metadata) and other reserved ranges.
-`ALLOW_PRIVATE_TARGETS=true` turns this off for local development.
+private, link-local (cloud metadata) and other reserved ranges. IPv6 is
+compared as parsed hextets, not text, so IPv4-mapped (`::ffff:7f00:1`), NAT64
+and 6to4 forms of a private IPv4 address are refused too.
+`ALLOW_PRIVATE_TARGETS=true` turns this off for local development. Known gap:
+the check resolves DNS separately from `fetch`, so a hostile DNS server could
+answer differently the second time (DNS rebinding). Closing that means pinning
+the resolved IP in a custom undici dispatcher.
+
+The public status page shows when incidents happened, never the raw check
+error, which can name hosts the page otherwise keeps private.
 
 **Email is best-effort.** The check, monitor state and incident are written in
 one transaction; the email goes out after commit, and a failed send is logged,
@@ -69,7 +77,9 @@ through a pooler.
 **Deliberately small auth scope.** NextAuth v5 with email + password (bcrypt)
 and JWT sessions. Emails are normalized to lowercase, and a unique-constraint
 violation is treated as "email taken" so concurrent signups return 409, not 500. Not built yet: email verification, password reset, login rate limiting.
-NextAuth v5 is still beta, but it's the line that supports Next.js 16 / React 19. `trustHost: true` is needed for non-Vercel hosts (Docker, self-hosted).
+NextAuth v5 is still beta, but it's the line that supports Next.js 16 /
+React 19. `trustHost: true` is needed for non-Vercel hosts (Docker,
+self-hosted).
 
 **404, never 403, for someone else's data.** Every monitor query is scoped by
 the signed-in user's id, so another account's monitor looks exactly like one
