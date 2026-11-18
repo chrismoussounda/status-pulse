@@ -11,6 +11,7 @@ export default defineConfig({
   },
   engine: "classic",
   datasource: {
-    url: env("DATABASE_URL"),
+    // Migrations need the unpooled connection.
+    url: env("DIRECT_URL"),
   },
 });
