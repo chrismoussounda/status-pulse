@@ -7,6 +7,8 @@ StatusPulse checks them every few minutes, opens an incident and emails you
 when one goes down, and publishes a shareable status page in French or
 English.
 
+**Live demo:** [status-pulse-eta.vercel.app/en/status/demo](https://status-pulse-eta.vercel.app/en/status/demo)
+
 | Monitor detail                                         | Public status page                                      | Mobile                                                                                 |
 | ------------------------------------------------------ | ------------------------------------------------------- | -------------------------------------------------------------------------------------- |
 | ![Monitor detail](docs/screenshots/monitor-detail.png) | ![Public status page](docs/screenshots/status-page.png) | <img src="docs/screenshots/mobile-dashboard.png" width="200" alt="Mobile dashboard" /> |
