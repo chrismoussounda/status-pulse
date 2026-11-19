@@ -6,10 +6,12 @@ The non-obvious trade-offs in StatusPulse, and why each was made.
 
 **External cron instead of an in-process scheduler.** Vercel's free tier can't
 run a long-lived `node-cron` loop, and its own Cron Jobs run at most once a
-day. A GitHub Actions workflow calls a secret-protected route
-(`/api/cron/run-checks`) every 5 minutes instead. GitHub's schedule drifts by
-tens of seconds, so a monitor counts as due 30s early; otherwise a 5-minute
-monitor would quietly slip to a 10-minute cadence.
+day. An external cron service (cron-job.org) calls a secret-protected route
+(`/api/cron/run-checks`) every 5 minutes instead. A GitHub Actions schedule
+was the first choice, but in production it fired once in 13 hours, so the
+workflow is now a manual trigger only. Cron timing still drifts by a few
+seconds, so a monitor counts as due 30s early; otherwise a 5-minute monitor
+would quietly slip to a 10-minute cadence.
 
 **No job queue.** A stateless route hit by cron is enough at this scale. A
 queue (BullMQ/Redis) would be more infrastructure with no current benefit.

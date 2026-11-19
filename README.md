@@ -32,15 +32,15 @@ Vercel + Neon
 
 ```mermaid
 flowchart LR
-    Cron["GitHub Actions<br/>every 5 min"] -->|"POST + CRON_SECRET"| API["/api/cron/run-checks"]
+    Cron["cron-job.org<br/>every 5 min"] -->|"POST + CRON_SECRET"| API["/api/cron/run-checks"]
     API -->|HTTP checks| Targets["Monitored URLs"]
     API --> DB[("Postgres")]
     API -.->|incident opened / resolved| Resend["Email"]
     Browser["Dashboard · Status page"] --> App["Next.js app"] --> DB
 ```
 
-There's no always-on server: GitHub Actions is the scheduler, calling a
-stateless route on Vercel. The reasoning behind this and other trade-offs is
+There's no always-on server: an external cron service is the scheduler,
+calling a stateless route on Vercel. The reasoning behind this and other trade-offs is
 in [docs/decisions.md](docs/decisions.md).
 
 ## Run it locally
@@ -83,12 +83,13 @@ fresh Postgres on every pull request.
 2. **Vercel:** import the repo and set the variables from `.env.example`
    (`NEXTAUTH_URL` is your deployed URL). Migrations run automatically during
    the build.
-3. **GitHub:** add `CRON_SECRET` as an Actions secret and your deployed URL as
-   an Actions variable named `APP_URL`. The `Run checks` workflow then calls
-   the app every 5 minutes.
+3. **Scheduler:** create a job on [cron-job.org](https://cron-job.org) (or
+   any cron service) that sends `POST <your URL>/api/cron/run-checks` every 5
+   minutes with the header `Authorization: Bearer <CRON_SECRET>`.
 
-GitHub pauses scheduled workflows after 60 days without repository activity;
-re-enable it from the Actions tab if that happens.
+To trigger a run by hand from GitHub, add `CRON_SECRET` as an Actions secret
+and your deployed URL as an Actions variable named `APP_URL`, then start the
+`Run checks` workflow.
 
 ## License
 
