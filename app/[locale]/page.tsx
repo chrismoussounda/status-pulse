@@ -3,7 +3,7 @@ import { ActivitySquareIcon, BellRingIcon, GlobeIcon } from "lucide-react";
 
 import { Link } from "@/i18n/navigation";
 import { Logo } from "@/components/logo";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LocaleSwitcher } from "@/components/locale-switcher";
@@ -40,13 +40,11 @@ export default async function Home() {
         </p>
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <Link href="/signup">
-            <Button size="lg">{t("cta")}</Button>
+          <Link href="/signup" className={buttonVariants({ size: "lg" })}>
+            {t("cta")}
           </Link>
-          <Link href="/login">
-            <Button size="lg" variant="outline">
-              {t("secondaryCta")}
-            </Button>
+          <Link href="/login" className={buttonVariants({ size: "lg", variant: "outline" })}>
+            {t("secondaryCta")}
           </Link>
         </div>
 

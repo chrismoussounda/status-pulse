@@ -130,6 +130,7 @@
     "resolved": "Résolu",
     "ongoing": "En cours",
     "poweredBy": "Propulsé par",
+    "createYours": "Créer votre page de statut",
     "metaTitle": "Statut de {name}",
     "metaDescription": "Statut en direct et historique de disponibilité de {name}."
   },
