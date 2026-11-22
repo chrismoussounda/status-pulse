@@ -130,6 +130,7 @@
     "resolved": "Resolved",
     "ongoing": "Ongoing",
     "poweredBy": "Powered by",
+    "createYours": "Create your status page",
     "metaTitle": "{name} status",
     "metaDescription": "Live status and uptime history for {name}."
   },

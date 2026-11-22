@@ -5,7 +5,9 @@ import { cache } from "react";
 
 import { prisma } from "@/lib/prisma";
 import { getDailyBars, getUptimeWindows } from "@/lib/uptime-stats";
+import { Link } from "@/i18n/navigation";
 import { Logo } from "@/components/logo";
+import { buttonVariants } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { MonitorCard } from "@/components/status-page/monitor-card";
@@ -70,11 +72,15 @@ export default async function StatusPage({ params }: Props) {
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto grid w-full max-w-3xl grid-cols-1 gap-6 px-4 py-10 sm:px-6 lg:py-14 3xl:max-w-4xl">
-        <header className="flex items-center justify-between gap-3">
+        <header className="flex flex-wrap items-center justify-between gap-3">
           <Logo label={user.name ?? "StatusPulse"} />
           <div className="flex items-center gap-1">
             <LocaleSwitcher />
             <ThemeToggle />
+            {/* Visitors arrive here from a shared link; this is their way into the app. */}
+            <Link href="/signup" className={buttonVariants({ size: "sm", className: "ml-1" })}>
+              {t("createYours")}
+            </Link>
           </div>
         </header>
 
@@ -107,7 +113,10 @@ export default async function StatusPage({ params }: Props) {
         )}
 
         <p className="pt-4 text-center text-xs text-muted-foreground">
-          {t("poweredBy")} StatusPulse
+          {t("poweredBy")}{" "}
+          <Link href="/" className="font-medium text-foreground underline-offset-4 hover:underline">
+            StatusPulse
+          </Link>
         </p>
       </div>
     </div>
