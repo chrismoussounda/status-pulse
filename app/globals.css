@@ -98,4 +98,16 @@
   html {
     @apply font-sans;
   }
+  /* Everything clickable shows the hand, not only links. */
+  button:not(:disabled),
+  [role="button"],
+  [role="switch"],
+  [role="menuitem"],
+  [role="menuitemradio"],
+  [role="option"],
+  [role="tab"],
+  summary,
+  label[for] {
+    cursor: pointer;
+  }
 }

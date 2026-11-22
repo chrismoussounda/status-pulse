@@ -8,7 +8,7 @@ import { toDisplayStatus } from "@/lib/display-status";
 import { getLatencySeries } from "@/lib/latency";
 import { formatTimestamp } from "@/lib/format-timestamp";
 import { Link } from "@/i18n/navigation";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MonitorStatusBadge } from "@/components/monitor-status-badge";
 import { UptimeBars } from "@/components/uptime-bars";
@@ -57,8 +57,11 @@ export default async function MonitorDetailPage({ params }: { params: Promise<{ 
           <p className="text-sm break-all text-muted-foreground">{monitor.url}</p>
         </div>
         <div className="flex items-center gap-2">
-          <Link href={`/dashboard/monitors/${monitor.id}/edit`}>
-            <Button variant="outline">{t("edit")}</Button>
+          <Link
+            href={`/dashboard/monitors/${monitor.id}/edit`}
+            className={buttonVariants({ variant: "outline" })}
+          >
+            {t("edit")}
           </Link>
           <MonitorDeleteButton id={monitor.id} />
         </div>
