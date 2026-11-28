@@ -21,9 +21,9 @@
     "featureMonitoringTitle": "Scheduled checks",
     "featureMonitoringBody": "A cron-driven check runner pings your endpoints and logs every response.",
     "featureIncidentsTitle": "Incident detection",
-    "featureIncidentsBody": "A status change automatically opens an incident; a recovery resolves it.",
+    "featureIncidentsBody": "A status change opens an incident automatically, and it is resolved once the service recovers.",
     "featureStatusPageTitle": "Public status page",
-    "featureStatusPageBody": "Share a readable status page with incident history and uptime for everyone."
+    "featureStatusPageBody": "Share a clear status page with everyone, showing incident history and uptime."
   },
   "auth": {
     "brand": "StatusPulse",
@@ -90,12 +90,12 @@
     "urlPlaceholder": "https://example.com/health",
     "urlInvalid": "Enter a valid URL, including https://",
     "method": "Method",
-    "expectedStatus": "Expected status",
+    "expectedStatus": "Expected status code",
     "interval": "Check interval (seconds)",
-    "intervalDescription": "How often the check runner should ping this URL.",
+    "intervalDescription": "How often this URL should be checked.",
     "intervalMin": "Minimum interval is 60 seconds",
     "active": "Active",
-    "activeDescription": "Include in the check runner.",
+    "activeDescription": "Include in scheduled checks.",
     "public": "Public",
     "publicDescription": "Show on your public status page.",
     "createSubmit": "Create monitor",
@@ -115,7 +115,7 @@
     "uptime7d": "Uptime (7d)",
     "uptime30d": "Uptime (30d)",
     "noData": "No data yet",
-    "latency": "Latency (last 20 checks)",
+    "latency": "Response time (last 20 checks)",
     "dailyUptime": "Daily uptime (90 days)"
   },
   "statusPage": {

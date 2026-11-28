@@ -14,67 +14,67 @@
     "dashboard": "Tableau de bord"
   },
   "landing": {
-    "title": "Surveillez vos endpoints. Publiez une page de statut.",
-    "subtitle": "StatusPulse vérifie vos URLs à intervalle régulier, détecte les incidents et publie une page de statut publique et partageable pour vos utilisateurs.",
+    "title": "Surveillez vos sites et API. Publiez une page de statut.",
+    "subtitle": "StatusPulse vérifie vos URL à intervalles réguliers, détecte les incidents et publie pour vos utilisateurs une page de statut publique, facile à partager.",
     "cta": "Commencer gratuitement",
     "secondaryCta": "Se connecter",
-    "featureMonitoringTitle": "Vérifications planifiées",
-    "featureMonitoringBody": "Un exécuteur de vérifications, piloté par une tâche planifiée, ping vos endpoints et journalise chaque réponse.",
+    "featureMonitoringTitle": "Vérifications régulières",
+    "featureMonitoringBody": "Une tâche planifiée interroge vos URL à intervalles réguliers et enregistre chaque réponse.",
     "featureIncidentsTitle": "Détection d'incidents",
-    "featureIncidentsBody": "Un changement de statut ouvre automatiquement un incident ; un retour à la normale le résout.",
+    "featureIncidentsBody": "Un changement d'état ouvre automatiquement un incident, et le retour à la normale le clôture.",
     "featureStatusPageTitle": "Page de statut publique",
-    "featureStatusPageBody": "Partagez une page de statut lisible par tous, avec l'historique des incidents et le taux de disponibilité."
+    "featureStatusPageBody": "Partagez avec tout le monde une page de statut claire, avec l'historique des incidents et le taux de disponibilité."
   },
   "auth": {
     "brand": "StatusPulse",
     "login": {
       "title": "Content de vous revoir",
-      "subtitle": "Connectez-vous pour gérer vos moniteurs.",
+      "subtitle": "Connectez-vous pour gérer vos sondes.",
       "email": "Adresse e-mail",
       "password": "Mot de passe",
       "submit": "Se connecter",
-      "submitting": "Connexion…",
-      "noAccount": "Vous n'avez pas de compte ?",
+      "submitting": "Connexion en cours…",
+      "noAccount": "Pas encore de compte ?",
       "signupLink": "Créer un compte",
-      "error": "E-mail ou mot de passe invalide."
+      "error": "E-mail ou mot de passe incorrect."
     },
     "signup": {
       "title": "Créez votre compte",
-      "subtitle": "Commencez à surveiller vos endpoints en quelques minutes.",
+      "subtitle": "Commencez à surveiller vos sites et API en quelques minutes.",
       "name": "Nom",
       "email": "Adresse e-mail",
       "password": "Mot de passe",
       "confirmPassword": "Confirmer le mot de passe",
-      "submit": "Créer le compte",
-      "submitting": "Création du compte…",
-      "hasAccount": "Vous avez déjà un compte ?",
+      "submit": "Créer mon compte",
+      "submitting": "Création du compte en cours…",
+      "hasAccount": "Déjà un compte ?",
       "loginLink": "Se connecter",
       "errorEmailTaken": "Un compte existe déjà avec cet e-mail.",
-      "errorInvalid": "Informations d'inscription invalides."
+      "errorInvalid": "Les informations saisies ne sont pas valides."
     },
     "validation": {
-      "nameRequired": "Le nom est requis",
+      "nameRequired": "Le nom est obligatoire",
       "emailInvalid": "Saisissez une adresse e-mail valide",
       "passwordMin": "Le mot de passe doit contenir au moins 8 caractères",
-      "passwordRequired": "Le mot de passe est requis",
+      "passwordRequired": "Le mot de passe est obligatoire",
       "passwordsMismatch": "Les mots de passe ne correspondent pas"
     }
   },
   "dashboard": {
-    "title": "Vos moniteurs",
-    "newMonitor": "Nouveau moniteur",
-    "empty": "Vous n'avez encore aucun moniteur.",
-    "emptyCta": "Créer votre premier moniteur",
+    "title": "Vos sondes",
+    "newMonitor": "Nouvelle sonde",
+    "empty": "Vous n'avez encore aucune sonde.",
+    "emptyCta": "Créer votre première sonde",
     "table": {
-      "monitor": "Moniteur",
+      "monitor": "Sonde",
       "status": "Statut",
-      "uptime": "Disponibilité (30j)",
-      "public": "Public",
-      "active": "Actif"
+      "uptime": "Disponibilité (30 j)",
+      "public": "Publique",
+      "active": "Active"
     },
     "badge": {
-      "public": "Public",
-      "private": "Privé"
+      "public": "Publique",
+      "private": "Privée"
     }
   },
   "monitorStatus": {
@@ -88,17 +88,17 @@
     "namePlaceholder": "Vérification de l'API",
     "url": "URL",
     "urlPlaceholder": "https://exemple.com/health",
-    "urlInvalid": "Saisissez une URL valide, incluant https://",
+    "urlInvalid": "Saisissez une URL complète et valide, avec https://",
     "method": "Méthode",
-    "expectedStatus": "Statut attendu",
+    "expectedStatus": "Code de statut attendu",
     "interval": "Intervalle de vérification (secondes)",
-    "intervalDescription": "Fréquence à laquelle l'exécuteur doit vérifier cette URL.",
-    "intervalMin": "L'intervalle minimum est de 60 secondes",
-    "active": "Actif",
-    "activeDescription": "Inclure dans l'exécuteur de vérifications.",
-    "public": "Public",
+    "intervalDescription": "À quelle fréquence cette URL doit être vérifiée.",
+    "intervalMin": "L'intervalle doit être d'au moins 60 secondes",
+    "active": "Active",
+    "activeDescription": "Inclure dans les vérifications automatiques.",
+    "public": "Publique",
     "publicDescription": "Afficher sur votre page de statut publique.",
-    "createSubmit": "Créer le moniteur",
+    "createSubmit": "Créer la sonde",
     "editSubmit": "Enregistrer les modifications",
     "saving": "Enregistrement…",
     "detailTitle": "Statut",
@@ -108,14 +108,14 @@
     "noIncidents": "Aucun incident enregistré.",
     "edit": "Modifier",
     "delete": "Supprimer",
-    "deleteConfirm": "Supprimer ce moniteur ? Cette action est irréversible.",
+    "deleteConfirm": "Supprimer cette sonde ? Cette action est définitive.",
     "backToDashboard": "Retour au tableau de bord",
     "uptime": "Disponibilité",
-    "uptime24h": "Disponibilité (24h)",
-    "uptime7d": "Disponibilité (7j)",
-    "uptime30d": "Disponibilité (30j)",
+    "uptime24h": "Disponibilité (24 h)",
+    "uptime7d": "Disponibilité (7 j)",
+    "uptime30d": "Disponibilité (30 j)",
     "noData": "Aucune donnée",
-    "latency": "Latence (20 dernières vérifications)",
+    "latency": "Temps de réponse (20 dernières vérifications)",
     "dailyUptime": "Disponibilité quotidienne (90 jours)"
   },
   "statusPage": {
@@ -126,13 +126,13 @@
     "uptime": "Disponibilité sur 90 jours",
     "recentIncidents": "Incidents récents",
     "noIncidents": "Aucun incident récent.",
-    "noPublicMonitors": "Aucun moniteur public pour le moment.",
+    "noPublicMonitors": "Aucune sonde publique pour le moment.",
     "resolved": "Résolu",
     "ongoing": "En cours",
     "poweredBy": "Propulsé par",
     "createYours": "Créer votre page de statut",
     "metaTitle": "Statut de {name}",
-    "metaDescription": "Statut en direct et historique de disponibilité de {name}."
+    "metaDescription": "État en temps réel et historique de disponibilité de {name}."
   },
   "uptimeBars": {
     "label": "Disponibilité quotidienne sur les {days} derniers jours",
