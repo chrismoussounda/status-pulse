@@ -69,12 +69,12 @@
       "monitor": "Sonde",
       "status": "Statut",
       "uptime": "Disponibilité (30 j)",
-      "public": "Public",
-      "active": "Actif"
+      "public": "Publique",
+      "active": "Active"
     },
     "badge": {
-      "public": "Public",
-      "private": "Privé"
+      "public": "Publique",
+      "private": "Privée"
     }
   },
   "monitorStatus": {
@@ -94,9 +94,9 @@
     "interval": "Intervalle de vérification (secondes)",
     "intervalDescription": "À quelle fréquence cette URL doit être vérifiée.",
     "intervalMin": "L'intervalle doit être d'au moins 60 secondes",
-    "active": "Actif",
+    "active": "Active",
     "activeDescription": "Inclure dans les vérifications automatiques.",
-    "public": "Public",
+    "public": "Publique",
     "publicDescription": "Afficher sur votre page de statut publique.",
     "createSubmit": "Créer la sonde",
     "editSubmit": "Enregistrer les modifications",
@@ -129,7 +129,7 @@
     "noPublicMonitors": "Aucune sonde publique pour le moment.",
     "resolved": "Résolu",
     "ongoing": "En cours",
-    "poweredBy": "Réalisé avec",
+    "poweredBy": "Propulsé par",
     "createYours": "Créer votre page de statut",
     "metaTitle": "Statut de {name}",
     "metaDescription": "État en temps réel et historique de disponibilité de {name}."
